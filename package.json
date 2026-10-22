@@ -5,7 +5,7 @@
   "description": "Submissions dashboard for the Agents on Open Rails hackathon, by builder city.",
   "scripts": {
     "test": "node --test",
-    "dev": "node dev-server.js"
+    "dev": "node --env-file-if-exists=.env.local dev-server.js"
   },
   "engines": { "node": ">=20" }
 }

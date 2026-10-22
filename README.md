@@ -29,5 +29,5 @@ Responses are cached at the edge for 5 minutes (`s-maxage=300`), so the Loops Ho
 
 ```bash
 npm test            # node --test, no dependencies
-npm run dev         # http://localhost:3456 (example data unless LOOPS_API_KEY is set)
+npm run dev         # http://localhost:3456; reads .env.local (git-ignored) if present
 ```
