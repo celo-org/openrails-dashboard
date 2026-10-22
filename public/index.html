@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <title>Open Rails City Ranking</title>
 <meta name="description" content="Live ranking of the cities building for Agents on Open Rails, the Celo hackathon: Argentina vs the world.">
 <link rel="canonical" href="https://openrails.celobuilders.xyz/">
@@ -34,17 +35,14 @@
 /* Celo palette (celo.org/brand-kit): Onyx #000000, Gypsum #FCF6F1, Prosperity Yellow #FCFF52. Inter + DM Mono.
    Layout: header, totals, the two rankings side by side (the point of the page), then tracks, readiness, daily activity. */
 :root{
-  --bg:#fcf6f1; --surface:#ffffff; --fg:#000000; --muted:#655947; --line:#e7e3d4;
+  /* Dark only: the Prosperity Yellow symbol has poor contrast on light backgrounds. */
+  --bg:#000000; --surface:#111111; --fg:#fcf6f1; --muted:#a39a8c; --line:#262420;
   --yellow:#fcff52; --on-yellow:#000000;
-  --bar-bg:#efe9df; --reg:#000000; --proj:#655947; --sub:#c9c35a;
+  --bar-bg:#1d1c19; --reg:#fcf6f1; --proj:#a39a8c; --sub:#fcff52;
   --f-body:"Inter",-apple-system,"Helvetica Neue",system-ui,sans-serif;
   --f-mono:"DM Mono",ui-monospace,Menlo,monospace;
-  color-scheme:light;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#000000; --surface:#111111; --fg:#fcf6f1; --muted:#a39a8c; --line:#262420;
-  --bar-bg:#1d1c19; --reg:#fcf6f1; --proj:#a39a8c; --sub:#fcff52;
-  color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--f-body);
