@@ -1,16 +1,15 @@
-// GET /api/stats — fetches submissions from Loops House server-side and returns
-// only aggregate counts. The API key never reaches the browser.
+// GET /api/stats — fetches the event payload from Loops House server-side and
+// returns only aggregate counts. The API key never reaches the browser.
 
-import { aggregate, pathsFromEnv } from "../lib/aggregate.js";
-import { sampleSubmissions } from "../lib/sample.js";
+import { aggregate } from "../lib/aggregate.js";
+import { samplePayload } from "../lib/sample.js";
 
 const DEFAULT_URL = "https://www.loops.house/api/v1/celo/agents-on-open-rails";
 
 export async function loadStats(env = process.env, fetchImpl = fetch) {
-  const paths = pathsFromEnv(env);
   const key = env.LOOPS_API_KEY;
   if (!key) {
-    return { status: 200, body: { sample: true, updatedAt: new Date().toISOString(), ...aggregate(sampleSubmissions(), paths) } };
+    return { status: 200, body: { sample: true, updatedAt: new Date().toISOString(), ...aggregate(samplePayload()) } };
   }
 
   const header = env.LOOPS_API_AUTH_HEADER || "Authorization";
@@ -22,13 +21,13 @@ export async function loadStats(env = process.env, fetchImpl = fetch) {
     return { status: 502, body: { error: "Couldn't reach the Loops House API. Try again in a minute." } };
   }
   if (res.status === 401 || res.status === 403) {
-    return { status: 502, body: { error: "Loops House rejected the API key. Check LOOPS_API_KEY and LOOPS_API_AUTH_HEADER in Vercel." } };
+    return { status: 502, body: { error: "Loops House rejected the API key. Check LOOPS_API_KEY in Vercel." } };
   }
   if (!res.ok) {
     return { status: 502, body: { error: `Loops House API answered ${res.status}.` } };
   }
   const payload = await res.json();
-  return { status: 200, body: { sample: false, updatedAt: new Date().toISOString(), ...aggregate(payload, paths) } };
+  return { status: 200, body: { sample: false, updatedAt: new Date().toISOString(), ...aggregate(payload) } };
 }
 
 export default async function handler(req, res) {
