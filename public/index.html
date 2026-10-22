@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open Rails Submissions</title>
+<meta name="description" content="Live submission counts for the Agents on Open Rails hackathon, by builder city and track.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column; headline count, then city bars (the point of the page), then track and daily strips. */
+:root{
+  --bg:#f5f6f1; --surface:#ffffff; --fg:#1a211d; --muted:#5b665f; --line:#dce1da;
+  --accent:#b97f00; --accent-soft:#f8ecca; --bar:#1f6b53; --bar-soft:#d6eadf; --warn-soft:#fbecd3; --warn:#8e5600;
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"Instrument Sans","Helvetica Neue",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111513; --surface:#191f1c; --fg:#e6ece8; --muted:#97a39c; --line:#2b3430;
+  --accent:#f0bb45; --accent-soft:#2d2611; --bar:#6fcf9f; --bar-soft:#173026; --warn-soft:#2d2212; --warn:#f2b45c;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:880px;margin:0 auto;display:grid;gap:28px}
+h1,h2{font-family:var(--f-display);margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(1.9rem,5vw,2.7rem);font-weight:700}
+h2{font-size:1.25rem;font-weight:700}
+.eyebrow{font:500 .72rem/1 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+header{padding-top:36px;display:grid;gap:10px}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 14px;font-size:.92rem}
+.banner[hidden]{display:none}
+.hero{display:flex;flex-wrap:wrap;gap:12px 40px;align-items:flex-end}
+.big{font:700 clamp(3rem,10vw,4.6rem)/.9 var(--f-display);font-variant-numeric:tabular-nums}
+.stat{display:grid;gap:4px}
+.stat .n{font:700 1.6rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:14px;min-width:0}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(96px,150px) 1fr 3ch;gap:12px;align-items:center;font-size:.95rem}
+.bar .track{display:block;height:14px;background:var(--bar-soft);border-radius:4px;overflow:hidden}
+.bar .fill{display:block;height:100%;background:var(--bar);border-radius:4px;min-width:2px}
+.bar .num{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.bar.other .fill{background:var(--muted)}
+.bar.other .label{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.days{display:flex;align-items:flex-end;gap:3px;height:110px;overflow-x:auto;padding-bottom:2px}
+.days .d{display:block;flex:1 0 10px;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px}
+.axis{display:flex;justify-content:space-between;font:400 .75rem var(--f-mono);color:var(--muted)}
+footer{font-size:.84rem;color:var(--muted);display:grid;gap:4px}
+.err{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Agents on Open Rails · Celo × Ripio</span>
+    <h1>Submissions by builder city</h1>
+    <p class="sub">Live counts from Loops House for the hackathon's six Argentine builder cities, plus everyone building from elsewhere. Deadline: 9 Nov 2026, 09:00 GMT.</p>
+    <div id="banner" class="banner" hidden>Example data. The Loops House API key isn't configured yet, so these numbers are placeholders.</div>
+  </header>
+
+  <section class="hero" aria-label="Totals">
+    <div class="stat"><span class="eyebrow">Submissions</span><span class="big" id="total">–</span></div>
+    <div class="stat"><span class="eyebrow">From builder cities</span><span class="n" id="inCities">–</span></div>
+    <div class="stat"><span class="eyebrow">Countries</span><span class="n" id="countries">–</span></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-city">
+    <h2 id="h-city">By city</h2>
+    <div class="bars" id="cities"><p class="sub">Loading…</p></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="h-track">
+      <h2 id="h-track">By track</h2>
+      <div class="bars" id="tracks"></div>
+    </section>
+    <section class="card" aria-labelledby="h-day">
+      <h2 id="h-day">Per day</h2>
+      <div class="days" id="days" role="img" aria-label="Submissions per day"></div>
+      <div class="axis"><span id="d0"></span><span id="d1"></span></div>
+    </section>
+  </div>
+
+  <footer>
+    <span id="updated"></span>
+    <span id="notes"></span>
+  </footer>
+</div>
+
+<script>
+const BUILDER = ["Buenos Aires","Córdoba","Rosario","Mar del Plata","Salta","Jujuy"];
+const $ = (id) => document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function bars(el, rows, otherFn){
+  const max = Math.max(1, ...rows.map(r=>r.count));
+  el.innerHTML = rows.map(r=>`<div class="bar${otherFn&&otherFn(r)?" other":""}"><span class="label">${esc(r.label)}</span><span class="track"><span class="fill" style="width:${(r.count/max*100).toFixed(1)}%"></span></span><span class="num">${r.count}</span></div>`).join("") || '<p class="sub">No submissions yet.</p>';
+}
+async function load(){
+  try{
+    const res = await fetch("/api/stats");
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    $("banner").hidden = !data.sample;
+    $("total").textContent = data.total;
+    $("inCities").textContent = data.byCity.filter(c=>BUILDER.includes(c.label)).reduce((n,c)=>n+c.count,0);
+    $("countries").textContent = data.byCountry.filter(c=>c.label!=="No country").length;
+    bars($("cities"), data.byCity, r=>!BUILDER.includes(r.label));
+    bars($("tracks"), data.byTrack);
+    const max = Math.max(1, ...data.byDay.map(d=>d.count));
+    $("days").innerHTML = data.byDay.map(d=>`<span class="d" title="${d.day}: ${d.count}" style="height:${(d.count/max*100).toFixed(1)}%"></span>`).join("");
+    $("d0").textContent = data.byDay[0]?.day ?? ""; $("d1").textContent = data.byDay.at(-1)?.day ?? "";
+    $("updated").textContent = `Updated ${new Date(data.updatedAt).toLocaleString()} · refreshes every 5 minutes`;
+    const u = data.unmatchedFields || {};
+    $("notes").textContent = u.city ? `${u.city} submission${u.city===1?"":"s"} had no city field.` : "";
+  }catch(e){
+    $("cities").innerHTML = `<p class="err">Couldn't load submissions: ${esc(e.message)}</p>`;
+  }
+}
+load(); setInterval(load, 5*60*1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "openrails-dashboard",
+  "private": true,
+  "type": "module",
+  "description": "Submissions dashboard for the Agents on Open Rails hackathon, by builder city.",
+  "scripts": {
+    "test": "node --test",
+    "dev": "node dev-server.js"
+  },
+  "engines": { "node": ">=20" }
+}
