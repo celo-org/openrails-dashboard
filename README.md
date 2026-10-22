@@ -1,6 +1,6 @@
-# Open Rails Submissions
+# Open Rails City Ranking
 
-Live submission counts for the [Agents on Open Rails](https://www.loops.house/agents-on-open-rails) hackathon (Celo × Ripio), broken down by the six Argentine builder cities (Buenos Aires, Córdoba, Rosario, Mar del Plata, Salta, Jujuy), track, country, and day.
+Live ranking of the cities building for [Agents on Open Rails](https://www.loops.house/agents-on-open-rails), the Celo hackathon: Argentina's six builder cities (Buenos Aires, Córdoba, Rosario, Mar del Plata, Salta, Jujuy) vs the world, plus tracks, judging readiness and daily activity.
 
 Planned home: `openrails.celobuilders.xyz`.
 
@@ -13,7 +13,18 @@ Planned home: `openrails.celobuilders.xyz`.
   - **Largest other cities:** only cities with 3 or more registrations, so no single builder is identifiable.
   - **By track:** a project entered in both the 1st and 2nd place bounty of a track counts once.
   - **Ready to be judged:** share of projects with an ERC-8004 identity, an attribution-tagged transaction, and a public repo.
+  - **Rankings:** Argentina (the six builder cities always, other Argentine cities from 3 builders) and World (top 10 cities with 3+ builders), by registered builders.
+- **Share on X:** each ranking has a Share button that opens an X post with the top cities, tagging @Celo and @CeloDevs and linking the page. The text is trimmed to stay under 280 characters.
 - Without `LOOPS_API_KEY` the page shows labelled **example data**, so the deploy works before the key is set.
+
+## Branding
+
+- `public/brand/Celo_Symbol_RGB_ProsperityYellow.svg|png`: official Celo symbol from the [Celo brand kit](https://celo.org/brand-kit) (Symbol → RGB → Prosperity Yellow), unmodified.
+- `public/favicon-celo-v1.png`, `public/apple-touch-icon.png`: the icons celo.org serves (yellow square, black C), unmodified; `favicon.ico` is the same image at 16/32/48 px. The bare symbol isn't used as a favicon because its C is transparent and disappears on dark tabs.
+- Palette and type from the brand kit: Onyx `#000000`, Gypsum `#FCF6F1`, Prosperity Yellow `#FCFF52`, Inter and DM Mono.
+- `public/og-v1.png` (1200×630): social card. Its bars are decorative so the image never shows stale numbers.
+- Icon and OG files are versioned in their names (`-v1`) because browsers and X cache them by URL: when one changes, bump the name and the reference in `index.html`. `vercel.json` sets a one-day cache on them.
+- `og:image`, `og:url` and the share link use `https://openrails.celobuilders.xyz/`, so link previews work once the domain points at the deploy.
 
 ## Deploy (Vercel)
 

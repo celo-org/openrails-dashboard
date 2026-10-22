@@ -78,6 +78,22 @@ test("topOtherCities only lists cities with 3+ registrations", () => {
   assert.deepEqual(out.topOtherCities, [{ label: "Lagos", country: "Nigeria", count: 3 }]);
 });
 
+test("rankings: Argentina keeps builder cities, world needs 3+ registrations", () => {
+  const f = fixture();
+  f.registrations.push(
+    { builderId: "l1", city: "Lagos", country: "Nigeria", projectId: "p2" },
+    { builderId: "l2", city: "Lagos", country: "Nigeria" },
+    { builderId: "m1", city: "Mendoza", country: "Argentina" },
+  );
+  f.projects[1].builderIds.push("l1");
+  const { argentina, world } = aggregate(f).rankings;
+  assert.equal(argentina[0].label, "Córdoba");
+  assert.deepEqual(argentina[0], { label: "Córdoba", country: "Argentina", registrations: 2, projects: 1, submitted: 1 });
+  assert.ok(argentina.some((r) => r.label === "Mar del Plata" && r.registrations === 0), "builder cities always listed");
+  assert.ok(!argentina.some((r) => r.label === "Mendoza"), "other Argentine cities need 3+");
+  assert.deepEqual(world, [{ label: "Lagos", country: "Nigeria", registrations: 3, projects: 1, submitted: 0 }], "a project counts once per city");
+});
+
 test("aggregate output never contains names, wallets, repos or builder ids", () => {
   const s = JSON.stringify(aggregate(fixture()));
   for (const secret of ["Secret Name", "0xWALLET", "github.com/x/y", "0xabc", '"a"', "builderId"]) {
