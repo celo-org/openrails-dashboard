@@ -76,17 +76,18 @@ header{display:grid;gap:12px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
-.rank{list-style:none;margin:0;padding:0;display:grid;gap:12px}
-.rank li{display:grid;grid-template-columns:2.2ch minmax(0,1fr) auto;gap:4px 12px;align-items:center}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.rank li{display:grid;grid-template-columns:2.2ch minmax(0,1fr) auto;gap:4px 12px;align-items:baseline}
 .rank .pos{font:500 .9rem var(--f-mono);color:var(--muted);text-align:right}
 .rank li:first-child .pos{color:var(--fg)}
 .rank .city{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rank .city small{color:var(--muted)}
-.rank .vals{font:400 .82rem var(--f-mono);color:var(--muted);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.rank .vals strong{color:var(--fg);font-weight:500;font-size:.95rem}
-.rank .bar{grid-column:2 / 4;display:block;height:8px;border-radius:3px;background:var(--bar-bg);overflow:hidden}
+.rank .count{white-space:nowrap;font-size:.84rem;color:var(--muted)}
+.rank .count b{font:600 1.05rem var(--f-body);color:var(--fg);font-variant-numeric:tabular-nums;margin-right:4px}
+.rank .bar{grid-column:2 / -1;display:block;height:8px;border-radius:3px;background:var(--bar-bg);overflow:hidden}
 .rank .bar b{display:block;height:100%;border-radius:3px;background:var(--reg)}
 .rank li:first-child .bar b{background:var(--yellow);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.rank .meta{grid-column:2 / -1;font:400 .78rem var(--f-mono);color:var(--muted);margin-top:-2px}
 .share{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background:var(--fg);color:var(--bg);font:600 .85rem var(--f-body);padding:8px 14px;cursor:pointer;text-decoration:none;white-space:nowrap}
 .share:hover{opacity:.85}
 .share svg{width:14px;height:14px;fill:currentColor}
@@ -148,7 +149,7 @@ footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
       <ol class="rank" id="rank-world"><li>Loading…</li></ol>
     </section>
   </div>
-  <p class="sub" style="font-size:.84rem;margin-top:-12px">Each row: <strong style="color:var(--fg)">builders</strong> · projects · submitted. World shows cities with 3 or more builders.</p>
+  <p class="sub" style="font-size:.84rem;margin-top:-12px">Ranked by registered builders. Projects are teams with at least one builder from that city; submitted ones are already in for judging. World shows cities with 3 or more builders.</p>
 
   <div class="grid2">
     <section class="card" aria-labelledby="h-track">
@@ -184,13 +185,15 @@ let latest = null;
 
 function rankList(el, rows, withCountry){
   const max = Math.max(1, ...rows.map(r => r.registrations));
-  el.innerHTML = rows.map((r, i) => `
-    <li>
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  el.innerHTML = !rows.length ? "<li>No cities yet.</li>" : rows.map((r, i) => `
+    <li aria-label="${i + 1}. ${esc(r.label)}: ${r.registrations} builders, ${r.projects} projects, ${r.submitted} submitted">
       <span class="pos">${i + 1}</span>
       <span class="city">${esc(r.label)}${withCountry && r.country ? ` <small>${esc(r.country)}</small>` : ""}</span>
-      <span class="vals"><strong>${r.registrations}</strong> · ${r.projects} · ${r.submitted}</span>
+      <span class="count"><b>${r.registrations}</b>${r.registrations === 1 ? "builder" : "builders"}</span>
       <span class="bar"><b style="width:${pct(r.registrations, max)}"></b></span>
-    </li>`).join("") || "<li>No cities yet.</li>";
+      <span class="meta">${plural(r.projects, "project")} · ${r.submitted} submitted</span>
+    </li>`).join("");
 }
 
 // Keeps the post under X's 280 characters: the link counts as 23, emoji count double, and a
