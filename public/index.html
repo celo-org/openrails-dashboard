@@ -106,6 +106,48 @@ header{display:grid;gap:12px}
 .axis{display:flex;justify-content:space-between;font:400 .75rem var(--f-mono);color:var(--muted)}
 footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
 .err{color:var(--fg);background:var(--yellow);padding:8px 12px;border-radius:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 .82rem var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg button:disabled{opacity:.4;cursor:default}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.toolbar .eyebrow{white-space:nowrap}
+.onchain .n{color:var(--yellow)}
+.pending{color:var(--muted);font-size:.9rem}
+.table-wrap{overflow-x:auto;margin:0 -4px}
+table.lb{width:100%;border-collapse:collapse;font-size:.92rem;min-width:560px}
+table.lb th{font:500 .68rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.lb th:nth-child(-n+2){text-align:left}
+table.lb td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.lb td:nth-child(-n+2){text-align:left;font-family:var(--f-body)}
+table.lb td:first-child{color:var(--muted);width:2.5ch}
+table.lb tr:first-child td:first-child{color:var(--yellow)}
+table.lb td.name{white-space:normal;min-width:180px}
+table.lb td.name a{font-weight:600;text-decoration:none}
+table.lb td.name a:hover{text-decoration:underline}
+table.lb td.strong{color:var(--fg);font-weight:500}
+.chip{display:inline-block;font:500 .68rem var(--f-body);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin:3px 4px 0 0}
+.tokens{display:grid;gap:10px}
+.tok{display:grid;grid-template-columns:5ch 1fr auto;gap:10px;align-items:center;font-size:.92rem}
+.tok b{font:600 .9rem var(--f-mono)}
+.tok .vals{min-width:11ch}
+.chart{width:100%;height:auto;display:block}
+.chart text{font:400 11px var(--f-mono);fill:var(--muted)}
+.row .meta{grid-column:1 / -1;font:400 .76rem var(--f-mono);color:var(--muted);margin-top:-6px}
+.seg{flex-wrap:wrap}
+@media (max-width:560px){
+  .table-wrap{overflow:visible;margin:0}
+  table.lb{min-width:0}
+  table.lb thead{display:none}
+  table.lb,table.lb tbody{display:block}
+  table.lb tr{display:grid;grid-template-columns:2.5ch repeat(3,minmax(0,1fr));gap:4px 8px;padding:12px 0;border-bottom:1px solid var(--line)}
+  table.lb td{border:0;padding:0;text-align:left}
+  table.lb td.name{grid-column:2 / -1;min-width:0}
+  table.lb td:first-child{grid-row:1 / span 2}
+  table.lb td[data-label]{font-size:.86rem}
+  table.lb td[data-label]::before{content:attr(data-label);display:block;font:500 .62rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  table.lb td[data-label="Volume"]{grid-column:2}
+}
 </style>
 </head>
 <body>
@@ -120,7 +162,7 @@ footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
 
   <header>
     <h1>Which city is building the most?</h1>
-    <p class="sub">Live ranking of registered builders by city, from Loops House. Argentina's builder cities on one side, the whole world on the other. <span id="deadline"></span></p>
+    <p class="sub">Live ranking of the hackathon from Loops House and Celo mainnet: who is registering, who is shipping, and how much value their agents are moving. <span id="deadline"></span></p>
     <div id="banner" class="banner" hidden>Example data. The Loops House API key isn't configured yet, so these numbers are placeholders.</div>
   </header>
 
@@ -131,7 +173,23 @@ footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
     <div class="stat"><span class="eyebrow">Countries</span><span class="n" id="countries">–</span></div>
   </section>
 
-  <div class="grid2">
+  <section class="hero onchain" aria-label="On-chain totals">
+    <div class="stat"><span class="eyebrow">Volume operated</span><span class="big" id="volume">–</span></div>
+    <div class="stat"><span class="eyebrow">Tagged transactions</span><span class="n" id="tagged">–</span></div>
+    <div class="stat"><span class="eyebrow">Agents transacting</span><span class="n" id="active">–</span></div>
+    <span class="pending" id="onchainStatus">Reading Celo mainnet…</span>
+  </section>
+
+  <div class="toolbar">
+    <span class="eyebrow">Rank cities by</span>
+    <div class="seg" role="group" aria-label="Rank cities by">
+      <button type="button" data-metric="registrations" aria-pressed="true">Builders</button>
+      <button type="button" data-metric="tagged" aria-pressed="false" disabled>Transactions</button>
+      <button type="button" data-metric="volumeUsd" aria-pressed="false" disabled>Volume</button>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:-10px">
     <section class="card" aria-labelledby="h-ar">
       <div class="head">
         <h2 id="h-ar">Argentina</h2>
@@ -147,7 +205,32 @@ footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
       <ol class="rank" id="rank-world"><li>Loading…</li></ol>
     </section>
   </div>
-  <p class="sub" style="font-size:.84rem;margin-top:-12px">Ranked by registered builders. Projects are teams with at least one builder from that city; submitted ones are already in for judging. World shows cities with 3 or more builders.</p>
+  <p class="sub" style="font-size:.84rem;margin-top:-12px">Projects are teams with at least one builder from that city, so a team spread across cities counts in each. World shows the top 10 cities with 3 or more builders.</p>
+
+  <section class="card" aria-labelledby="h-proj">
+    <div class="head">
+      <h2 id="h-proj">Top projects</h2>
+      <div class="seg" role="group" aria-label="Sort projects by">
+        <button type="button" data-psort="volumeUsd" aria-pressed="true">Volume</button>
+        <button type="button" data-psort="tagged" aria-pressed="false">Transactions</button>
+        <button type="button" data-psort="counterparties" aria-pressed="false">Counterparties</button>
+      </div>
+    </div>
+    <div class="table-wrap" id="projectsWrap"><p class="pending">Reading Celo mainnet…</p></div>
+    <p class="sub" style="font-size:.82rem" id="draftsNote"></p>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="h-tok">
+      <h2 id="h-tok">Volume by currency</h2>
+      <p class="sub" style="font-size:.88rem">Which rails agents actually settle on.</p>
+      <div class="tokens" id="tokens"><p class="pending">Reading Celo mainnet…</p></div>
+    </section>
+    <section class="card" aria-labelledby="h-act">
+      <div class="head"><h2 id="h-act">On-chain activity</h2><div class="legend"><span><i style="background:var(--yellow)"></i>Tagged txs per day</span><span><i style="background:var(--fg)"></i>Cumulative volume</span></div></div>
+      <div id="activity"><p class="pending">Reading Celo mainnet…</p></div>
+    </section>
+  </div>
 
   <div class="grid2">
     <section class="card" aria-labelledby="h-track">
@@ -162,14 +245,14 @@ footer{font-size:.84rem;color:var(--muted);display:grid;gap:6px}
   </div>
 
   <section class="card" aria-labelledby="h-day">
-    <div class="head"><h2 id="h-day">Per day</h2><div class="legend"><span><i style="background:var(--reg)"></i>Registrations</span><span><i style="background:var(--sub)"></i>Submissions</span></div></div>
+    <div class="head"><h2 id="h-day">Registrations and submissions per day</h2><div class="legend"><span><i style="background:var(--reg)"></i>Registrations</span><span><i style="background:var(--sub)"></i>Submissions</span></div></div>
     <div class="days" id="days" role="img" aria-label="Registrations and submissions per day"></div>
     <div class="axis"><span id="d0"></span><span id="d1"></span></div>
   </section>
 
   <footer>
     <span id="updated"></span>
-    <span>Data from <a href="https://www.loops.house/agents-on-open-rails" rel="noopener">Loops House</a>. A project counts in every city its team registered from. Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
+    <span>Registrations and projects from <a href="https://www.loops.house/agents-on-open-rails" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet since the hackathon started: <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side. Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
   </footer>
 </div>
 
@@ -179,30 +262,53 @@ const $ = (id) => document.getElementById(id);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 const pct = (n, max) => (max ? Math.min(100, Math.max(n ? 1.5 : 0, n / max * 100)) : 0).toFixed(1) + "%";
 function line(n, max, color){ return `<span class="line"><b style="width:${pct(n,max)};background:var(${color})"></b></span>`; }
-let latest = null;
+const usd = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: n >= 10000 ? "compact" : "standard", maximumFractionDigits: n >= 10000 ? 1 : 0 }).format(n || 0);
+const num = (n) => new Intl.NumberFormat("en-US").format(n || 0);
+const plural = (n, w) => `${num(n)} ${w}${n === 1 ? "" : "s"}`;
+let latest = null, metric = "registrations", psort = "volumeUsd";
 
-function rankList(el, rows, withCountry){
-  const max = Math.max(1, ...rows.map(r => r.registrations));
-  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-  el.innerHTML = !rows.length ? "<li>No cities yet.</li>" : rows.map((r, i) => `
-    <li aria-label="${i + 1}. ${esc(r.label)}: ${r.registrations} builders, ${r.projects} projects, ${r.submitted} submitted">
+const METRIC = {
+  registrations: { big: (r) => num(r.registrations), unit: (r) => r.registrations === 1 ? "builder" : "builders", share: (r) => plural(r.registrations, "builder"), title: "building the most agents" },
+  tagged: { big: (r) => num(r.tagged), unit: (r) => r.tagged === 1 ? "tx" : "txs", share: (r) => plural(r.tagged, "tagged tx"), title: "with the most agent transactions" },
+  volumeUsd: { big: (r) => usd(r.volumeUsd), unit: () => "volume", share: (r) => `${usd(r.volumeUsd)} operated`, title: "operating the most volume" },
+};
+
+function ranked(kind){
+  const rows = [...(latest?.rankings?.[kind] ?? [])].sort((a, b) => (b[metric] ?? 0) - (a[metric] ?? 0) || b.registrations - a.registrations || a.label.localeCompare(b.label));
+  return kind === "world" ? rows.slice(0, 10) : rows;
+}
+
+function rankList(el, kind){
+  const rows = ranked(kind), M = METRIC[metric];
+  const max = Math.max(1e-9, ...rows.map(r => r[metric] ?? 0));
+  el.innerHTML = !rows.length ? "<li>No cities yet.</li>" : rows.map((r, i) => {
+    const bits = [plural(r.projects, "project"), `${r.submitted} submitted`];
+    if (latest.onchain) {
+      if (metric !== "registrations") bits.unshift(plural(r.registrations, "builder"));
+      if (metric !== "tagged") bits.push(`${num(r.tagged)} txs`);
+      if (metric !== "volumeUsd") bits.push(usd(r.volumeUsd));
+    }
+    return `
+    <li aria-label="${i + 1}. ${esc(r.label)}: ${M.share(r)}; ${bits.join(", ")}">
       <span class="pos">${i + 1}</span>
-      <span class="city">${esc(r.label)}${withCountry && r.country ? ` <small>${esc(r.country)}</small>` : ""}</span>
-      <span class="count"><b>${r.registrations}</b>${r.registrations === 1 ? "builder" : "builders"}</span>
-      <span class="bar"><b style="width:${pct(r.registrations, max)}"></b></span>
-      <span class="meta">${plural(r.projects, "project")} · ${r.submitted} submitted</span>
-    </li>`).join("");
+      <span class="city">${esc(r.label)}${kind === "world" && r.country ? ` <small>${esc(r.country)}</small>` : ""}</span>
+      <span class="count"><b>${M.big(r)}</b>${M.unit(r)}</span>
+      <span class="bar"><b style="width:${pct(r[metric] ?? 0, max)}"></b></span>
+      <span class="meta">${bits.join(" · ")}</span>
+    </li>`;
+  }).join("");
 }
 
 // Keeps the post under X's 280 characters: the link counts as 23, emoji count double, and a
 // 15-character margin covers X's other weighting. Rows drop from the bottom until it fits.
 function shareText(kind){
-  const rows = (latest?.rankings?.[kind] ?? []).filter(r => r.registrations > 0);
+  const M = METRIC[metric];
+  const rows = ranked(kind).filter(r => (r[metric] ?? 0) > 0);
   const head = kind === "argentina"
-    ? "🇦🇷 Which Argentine city is building the most agents on @Celo?"
-    : "🌎 Which city in the world is building the most agents on @Celo?";
+    ? `🇦🇷 Which Argentine city is ${M.title} on @Celo?`
+    : `🌎 Which city in the world is ${M.title} on @Celo?`;
   const tail = "Live ranking for Agents on Open Rails, the @CeloDevs hackathon 👇";
-  const fmt = (r, i) => `${i + 1}. ${r.label}${kind === "world" && r.country ? `, ${r.country}` : ""}: ${r.registrations} builder${r.registrations === 1 ? "" : "s"}`;
+  const fmt = (r, i) => `${i + 1}. ${r.label}${kind === "world" && r.country ? `, ${r.country}` : ""}: ${M.share(r)}`;
   for (let n = Math.min(5, rows.length); n >= 1; n--) {
     const text = `${head}\n\n${rows.slice(0, n).map(fmt).join("\n")}\n\n${tail}`;
     const emoji = (text.match(/\p{Extended_Pictographic}|\p{Regional_Indicator}/gu) ?? []).length;
@@ -216,18 +322,85 @@ document.querySelectorAll("[data-share]").forEach(btn => btn.addEventListener("c
   const a = Object.assign(document.createElement("a"), { href: url, target: "_blank", rel: "noopener" });
   document.body.appendChild(a); a.click(); a.remove();
 }));
+function pressGroup(attr, value){ document.querySelectorAll(`[${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value))); }
+document.querySelectorAll("[data-metric]").forEach(b => b.addEventListener("click", () => {
+  if (b.disabled) return; metric = b.dataset.metric; pressGroup("data-metric", metric);
+  rankList($("rank-argentina"), "argentina"); rankList($("rank-world"), "world");
+}));
+document.querySelectorAll("[data-psort]").forEach(b => b.addEventListener("click", () => {
+  psort = b.dataset.psort; pressGroup("data-psort", psort); renderProjects();
+}));
+
+function renderProjects(){
+  const p = latest?.projects;
+  if (!p) return;
+  const rows = [...p.submitted].sort((a, b) => (b[psort] ?? 0) - (a[psort] ?? 0) || b.volumeUsd - a.volumeUsd || a.name.localeCompare(b.name)).slice(0, 10);
+  $("projectsWrap").innerHTML = !rows.length ? '<p class="sub">No submitted projects yet.</p>' : `
+    <table class="lb">
+      <thead><tr><th>#</th><th>Project</th><th>Volume</th><th>Tagged txs</th><th>Counterparties</th></tr></thead>
+      <tbody>${rows.map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td class="name">${r.url ? `<a href="${esc(r.url)}" rel="noopener" target="_blank">${esc(r.name)}</a>` : esc(r.name)}<br>${r.tracks.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</td>
+          <td data-label="Volume" class="${psort === "volumeUsd" ? "strong" : ""}">${usd(r.volumeUsd)}</td>
+          <td data-label="Tagged txs" class="${psort === "tagged" ? "strong" : ""}">${num(r.tagged)}</td>
+          <td data-label="Counterparties" class="${psort === "counterparties" ? "strong" : ""}">${num(r.counterparties)}</td>
+        </tr>`).join("")}</tbody>
+    </table>`;
+  $("draftsNote").textContent = p.drafts.projects
+    ? `Showing submitted projects. ${plural(p.drafts.projects, "draft")} not listed by name: ${num(p.drafts.tagged)} tagged txs and ${usd(p.drafts.volumeUsd)} volume between them.`
+    : "Showing submitted projects.";
+}
+
+function renderTokens(){
+  const rows = latest.byToken ?? [];
+  const total = rows.reduce((n, r) => n + r.volumeUsd, 0);
+  const max = Math.max(1e-9, ...rows.map(r => r.volumeUsd));
+  $("tokens").innerHTML = !rows.length ? '<p class="sub">No payments yet.</p>' : rows.map((r, i) => `
+    <div class="tok"><b>${esc(r.label)}</b>${line(r.volumeUsd, max, i === 0 ? "--yellow" : "--reg")}<span class="vals"><strong>${usd(r.volumeUsd)}</strong> · ${total ? Math.round(r.volumeUsd / total * 100) : 0}%</span></div>`).join("");
+}
+
+function renderActivity(){
+  const days = (latest.byDay ?? []).filter(d => d.day >= (latest.byDay.find(x => x.tagged || x.volumeUsd)?.day ?? "9999"));
+  if (!days.length) { $("activity").innerHTML = '<p class="sub">No tagged transactions yet.</p>'; return; }
+  const W = 560, H = 190, L = 8, R = 8, T = 22, B = 22, n = days.length;
+  const bw = (W - L - R) / n, tmax = Math.max(1, ...days.map(d => d.tagged));
+  let cum = 0; const cums = days.map(d => (cum += d.volumeUsd));
+  const vmax = Math.max(1e-9, cum), y = (v, m) => T + (H - T - B) * (1 - v / m);
+  const bars = days.map((d, i) => `<rect x="${(L + i * bw + bw * .15).toFixed(1)}" y="${y(d.tagged, tmax).toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${(H - B - y(d.tagged, tmax)).toFixed(1)}" rx="2" fill="var(--yellow)"><title>${d.day}: ${d.tagged} tagged txs, ${usd(d.volumeUsd)} volume</title></rect>`).join("");
+  const pts = cums.map((c, i) => `${(L + i * bw + bw / 2).toFixed(1)},${y(c, vmax).toFixed(1)}`).join(" ");
+  $("activity").innerHTML = `
+    <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tagged transactions per day and cumulative volume, ${days[0].day} to ${days.at(-1).day}">
+      <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>
+      ${bars}
+      <polyline points="${pts}" fill="none" stroke="var(--fg)" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="${(L + (n - 1) * bw + bw / 2).toFixed(1)}" cy="${y(cum, vmax).toFixed(1)}" r="3.5" fill="var(--fg)"/>
+      <text x="${W - R}" y="${Math.max(12, y(cum, vmax) - 8).toFixed(1)}" text-anchor="end">${usd(cum)}</text>
+      <text x="${L}" y="12">max ${num(tmax)} txs/day</text>
+      <text x="${L}" y="${H - 6}">${days[0].day}</text>
+      <text x="${W - R}" y="${H - 6}" text-anchor="end">${days.at(-1).day}</text>
+    </svg>`;
+}
 
 function render(data){
   latest = data;
   $("banner").hidden = !data.sample;
   const t = data.totals;
-  $("submitted").textContent = t.submitted; $("projects").textContent = t.projects;
-  $("registrations").textContent = t.registrations; $("countries").textContent = t.countries;
+  $("submitted").textContent = num(t.submitted); $("projects").textContent = num(t.projects);
+  $("registrations").textContent = num(t.registrations); $("countries").textContent = num(t.countries);
   if (data.event?.submissionDeadline) {
     $("deadline").textContent = "Submissions close " + new Date(data.event.submissionDeadline).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}) + ".";
   }
-  rankList($("rank-argentina"), data.rankings.argentina, false);
-  rankList($("rank-world"), data.rankings.world, true);
+  document.querySelectorAll('[data-metric]:not([data-metric="registrations"])').forEach(b => { b.disabled = !data.onchain; });
+  if (data.onchain) {
+    $("volume").textContent = usd(t.volumeUsd);
+    $("tagged").textContent = num(t.taggedTxs);
+    $("active").textContent = `${num(t.projectsWithTaggedTx)} / ${num(t.projects)}`;
+    $("onchainStatus").textContent = data.failedWallets ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.` : "";
+    renderProjects(); renderTokens(); renderActivity();
+  }
+  rankList($("rank-argentina"), "argentina");
+  rankList($("rank-world"), "world");
 
   const tmax = Math.max(1, ...data.byTrack.map(x => x.projects));
   $("tracks").innerHTML = data.byTrack.map(x => `
@@ -235,6 +408,7 @@ function render(data){
       <span class="label">${esc(x.label)}</span>
       <span class="stack">${line(x.projects,tmax,"--proj")}${line(x.submitted,tmax,"--sub")}</span>
       <span class="vals"><strong>${x.projects}</strong> · ${x.submitted}</span>
+      ${data.onchain ? `<span class="meta">${num(x.tagged)} tagged txs · ${usd(x.volumeUsd)} volume</span>` : ""}
     </div>`).join("") || '<p class="sub">No projects yet.</p>';
 
   const r = data.readiness, P = r.projects;
@@ -248,20 +422,31 @@ function render(data){
       <b style="height:${(d.submitted/dmax*100).toFixed(1)}%;background:var(--sub);border-radius:3px 3px 0 0"></b>
     </span>`).join("");
   $("d0").textContent = data.byDay[0]?.day ?? ""; $("d1").textContent = data.byDay.at(-1)?.day ?? "";
-  $("updated").textContent = `Updated ${new Date(data.updatedAt).toLocaleString()} · refreshes every 5 minutes`;
+  $("updated").textContent = `Updated ${new Date(data.updatedAt).toLocaleString()} · registrations refresh every 5 minutes, on-chain data every 15`;
 }
 
-async function load(){
-  try{
-    const res = await fetch("/api/stats");
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-    render(data);
-  }catch(e){
-    $("rank-argentina").innerHTML = `<li class="err">Couldn't load the ranking: ${esc(e.message)}</li>`;
-  }
+async function get(path){
+  const res = await fetch(path);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
 }
-load(); setInterval(load, 5*60*1000);
+// Registrations load fast; on-chain data (~15 s when the cache is cold) replaces it when ready.
+async function loadStats(){
+  if (latest?.onchain) return;
+  try {
+    const data = await get("/api/stats");
+    if (!latest?.onchain) render(data); // on-chain data is a superset; never overwrite it with less
+  }
+  catch (e) { if (!latest) $("rank-argentina").innerHTML = `<li class="err">Couldn't load the ranking: ${esc(e.message)}</li>`; }
+}
+async function loadOnchain(){
+  try { render(await get("/api/onchain")); }
+  catch (e) { $("onchainStatus").textContent = `Couldn't read on-chain data: ${e.message}`; }
+}
+loadStats(); loadOnchain();
+setInterval(loadStats, 5 * 60 * 1000);
+setInterval(loadOnchain, 15 * 60 * 1000);
 </script>
 </body>
 </html>

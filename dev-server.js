@@ -3,13 +3,14 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, normalize } from "node:path";
 import { loadStats } from "./api/stats.js";
+import { loadOnchainShared } from "./api/onchain.js";
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
 const port = Number(process.env.PORT || 3456);
 createServer(async (req, res) => {
   const path = new URL(req.url, "http://x").pathname;
-  if (path === "/api/stats") {
-    const { status, body } = await loadStats();
+  if (path === "/api/stats" || path === "/api/onchain") {
+    const { status, body } = await (path === "/api/stats" ? loadStats() : loadOnchainShared());
     res.writeHead(status, { "content-type": "application/json" });
     return res.end(JSON.stringify(body));
   }

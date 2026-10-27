@@ -1,6 +1,27 @@
 {
   "headers": [
-    { "source": "/(favicon.ico|favicon-celo-v1.png|apple-touch-icon.png|og-v1.png)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] },
-    { "source": "/brand/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
-  ]
+    {
+      "source": "/(favicon.ico|favicon-celo-v1.png|apple-touch-icon.png|og-v1.png)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/brand/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "api/onchain.js": {
+      "maxDuration": 60
+    }
+  }
 }

@@ -59,12 +59,12 @@ test("aggregate counts registrations by city and projects in each builder's city
 test("aggregate counts each track once per project and reports readiness", () => {
   const out = aggregate(fixture());
   assert.deepEqual(out.byTrack, [
-    { label: "Stable Agents: LatAm", projects: 1, submitted: 1 },
-    { label: "No track", projects: 1, submitted: 0 },
+    { label: "Stable Agents: LatAm", projects: 1, submitted: 1, tagged: 0, volumeUsd: 0 },
+    { label: "No track", projects: 1, submitted: 0, tagged: 0, volumeUsd: 0 },
   ]);
   assert.deepEqual(out.readiness, { projects: 2, withIdentity: 1, withTaggedTx: 1, withRepo: 1 });
-  assert.deepEqual(out.totals, { registrations: 5, projects: 2, submitted: 1, countries: 2 });
-  assert.deepEqual(out.byDay.find((d) => d.day === "2026-10-12"), { day: "2026-10-12", registrations: 0, submitted: 1 });
+  assert.deepEqual(out.totals, { registrations: 5, projects: 2, submitted: 1, countries: 2, taggedTxs: 0, volumeUsd: 0, projectsWithTaggedTx: 0 });
+  assert.deepEqual(out.byDay.find((d) => d.day === "2026-10-12"), { day: "2026-10-12", registrations: 0, submitted: 1, tagged: 0, volumeUsd: 0 });
 });
 
 test("topOtherCities only lists cities with 3+ registrations", () => {
@@ -88,10 +88,10 @@ test("rankings: Argentina keeps builder cities, world needs 3+ registrations", (
   f.projects[1].builderIds.push("l1");
   const { argentina, world } = aggregate(f).rankings;
   assert.equal(argentina[0].label, "Córdoba");
-  assert.deepEqual(argentina[0], { label: "Córdoba", country: "Argentina", registrations: 2, projects: 1, submitted: 1 });
+  assert.deepEqual(argentina[0], { label: "Córdoba", country: "Argentina", registrations: 2, projects: 1, submitted: 1, tagged: 0, volumeUsd: 0 });
   assert.ok(argentina.some((r) => r.label === "Mar del Plata" && r.registrations === 0), "builder cities always listed");
   assert.ok(!argentina.some((r) => r.label === "Mendoza"), "other Argentine cities need 3+");
-  assert.deepEqual(world, [{ label: "Lagos", country: "Nigeria", registrations: 3, projects: 1, submitted: 0 }], "a project counts once per city");
+  assert.deepEqual(world, [{ label: "Lagos", country: "Nigeria", registrations: 3, projects: 1, submitted: 0, tagged: 0, volumeUsd: 0 }], "a project counts once per city");
 });
 
 test("aggregate output never contains names, wallets, repos or builder ids", () => {

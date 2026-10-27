@@ -17,6 +17,20 @@ Planned home: `openrails.celobuilders.xyz`.
 - **Share on X:** each ranking has a Share button that opens an X post with the top cities, tagging @Celo and @CeloDevs and linking the page. The text is trimmed to stay under 280 characters.
 - Without `LOOPS_API_KEY` the page shows labelled **example data**, so the deploy works before the key is set.
 
+## On-chain activity
+
+`api/onchain.js` returns everything `/api/stats` does plus on-chain activity, read from [Blockscout](https://celo.blockscout.com) for every project's `agentWallet` since the event started (`lib/onchain.js`):
+
+- **Tagged transactions:** successful txs sent by the agent wallet whose calldata ends in an ERC-8021 suffix carrying the project's attribution code (`project.code` from Loops House).
+- **Volume:** transfers in or out of the agent wallet in USDC, USDT, USAT, USDm, the six Ripio wFIAT, cNGN and CELO, valued at Blockscout's current exchange rate (USD stablecoins at 1). Other tokens (LP, debt, spam) never count.
+- **Counterparties:** distinct wallets on the other side of those transfers.
+
+The page shows them as on-chain KPIs, a Builders / Transactions / Volume switch on the city rankings (the X share text follows it), a top-projects leaderboard (submitted projects only, since drafts have no public name; drafts are summed in one line), volume by currency, daily tagged txs with cumulative volume, and tx/volume per track.
+
+Scanning all wallets takes about 20 s. The function has `maxDuration: 60`, the CDN caches it for 15 minutes with a day of stale-while-revalidate, concurrent requests share one in-flight scan, and Blockscout 429s are retried with backoff. Wallets that still fail are reported (`failedWallets`) and shown on the page instead of silently counting as zero.
+
+Known limits: tagged txs sent from a wallet other than the agent wallet (e.g. end users of a project's frontend) aren't counted; volume uses current rates, not the rate at transfer time; transfers between two agent wallets count for both projects.
+
 ## Branding
 
 - `public/brand/Celo_Symbol_RGB_ProsperityYellow.svg|png`: official Celo symbol from the [Celo brand kit](https://celo.org/brand-kit) (Symbol → RGB → Prosperity Yellow), unmodified.
