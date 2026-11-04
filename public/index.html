@@ -135,6 +135,19 @@ table.lb td.strong{color:var(--fg);font-weight:500}
 .chart text{font:400 11px var(--f-mono);fill:var(--muted)}
 .row .meta{grid-column:1 / -1;font:400 .76rem var(--f-mono);color:var(--muted);margin-top:-6px}
 .seg{flex-wrap:wrap}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skel{display:block;border-radius:6px;background:linear-gradient(90deg,var(--bar-bg) 25%,#2a2925 50%,var(--bar-bg) 75%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
+.skel-stack{display:grid;gap:12px}
+.skel.row-s{height:14px}.skel.row-s:nth-child(2n){width:82%}.skel.row-s:nth-child(3n){width:64%}
+.skel.chart-s{height:150px}
+.skel.num-s{display:inline-block;width:5ch;height:1em;vertical-align:-.1em}
+.big .skel.num-s{width:4.5ch}
+.status{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.86rem}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow);animation:pulse 1.2s ease-in-out infinite}
+.status.done .dot{animation:none;background:#56df7c}
+.status.stale .dot{animation:none;background:var(--muted)}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.skel,.status .dot{animation:none}}
 @media (max-width:560px){
   .table-wrap{overflow:visible;margin:0}
   table.lb{min-width:0}
@@ -174,10 +187,10 @@ table.lb td.strong{color:var(--fg);font-weight:500}
   </section>
 
   <section class="hero onchain" aria-label="On-chain totals">
-    <div class="stat"><span class="eyebrow">Volume operated</span><span class="big" id="volume">–</span></div>
-    <div class="stat"><span class="eyebrow">Tagged transactions</span><span class="n" id="tagged">–</span></div>
-    <div class="stat"><span class="eyebrow">Agents transacting</span><span class="n" id="active">–</span></div>
-    <span class="pending" id="onchainStatus">Reading Celo mainnet…</span>
+    <div class="stat"><span class="eyebrow">Volume operated</span><span class="big" id="volume"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Tagged transactions</span><span class="n" id="tagged"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Agents transacting</span><span class="n" id="active"><span class="skel num-s"></span></span></div>
+    <span class="status" id="onchainStatus" role="status"><span class="dot"></span><span id="onchainStatusText">Reading every agent wallet on Celo mainnet. This can take up to a minute.</span></span>
   </section>
 
   <div class="toolbar">
@@ -216,7 +229,7 @@ table.lb td.strong{color:var(--fg);font-weight:500}
         <button type="button" data-psort="counterparties" aria-pressed="false">Counterparties</button>
       </div>
     </div>
-    <div class="table-wrap" id="projectsWrap"><p class="pending">Reading Celo mainnet…</p></div>
+    <div class="table-wrap" id="projectsWrap"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
     <p class="sub" style="font-size:.82rem" id="draftsNote"></p>
   </section>
 
@@ -224,11 +237,11 @@ table.lb td.strong{color:var(--fg);font-weight:500}
     <section class="card" aria-labelledby="h-tok">
       <h2 id="h-tok">Volume by currency</h2>
       <p class="sub" style="font-size:.88rem">Which rails agents actually settle on.</p>
-      <div class="tokens" id="tokens"><p class="pending">Reading Celo mainnet…</p></div>
+      <div class="tokens" id="tokens"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
     </section>
     <section class="card" aria-labelledby="h-act">
       <div class="head"><h2 id="h-act">On-chain activity</h2><div class="legend"><span><i style="background:var(--yellow)"></i>Tagged txs per day</span><span><i style="background:var(--fg)"></i>Cumulative volume</span></div></div>
-      <div id="activity"><p class="pending">Reading Celo mainnet…</p></div>
+      <div id="activity"><span class="skel chart-s" aria-hidden="true"></span></div>
     </section>
   </div>
 
@@ -396,7 +409,12 @@ function render(data){
     $("volume").textContent = usd(t.volumeUsd);
     $("tagged").textContent = num(t.taggedTxs);
     $("active").textContent = `${num(t.projectsWithTaggedTx)} / ${num(t.projects)}`;
-    $("onchainStatus").textContent = data.failedWallets ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.` : "";
+    const age = data.snapshotAt ? Math.round((Date.now() - new Date(data.snapshotAt)) / 60000) : 0;
+    const st = $("onchainStatus");
+    st.className = "status " + (data.failedWallets ? "stale" : "done");
+    $("onchainStatusText").textContent = data.failedWallets
+      ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.`
+      : `On-chain data as of ${age <= 1 ? "just now" : `${age} min ago`}${data.refreshing ? " · refreshing in the background" : ""}`;
     renderProjects(); renderTokens(); renderActivity();
   }
   rankList($("rank-argentina"), "argentina");
@@ -442,7 +460,11 @@ async function loadStats(){
 }
 async function loadOnchain(){
   try { render(await get("/api/onchain")); }
-  catch (e) { $("onchainStatus").textContent = `Couldn't read on-chain data: ${e.message}`; }
+  catch (e) {
+    $("onchainStatus").className = "status stale";
+    $("onchainStatusText").textContent = `Couldn't read on-chain data (${e.message}). Retrying in a minute.`;
+    setTimeout(loadOnchain, 60 * 1000);
+  }
 }
 loadStats(); loadOnchain();
 setInterval(loadStats, 5 * 60 * 1000);

@@ -27,7 +27,9 @@ Planned home: `openrails.celobuilders.xyz`.
 
 The page shows them as on-chain KPIs, a Builders / Transactions / Volume switch on the city rankings (the X share text follows it), a top-projects leaderboard (submitted projects only, since drafts have no public name; drafts are summed in one line), volume by currency, daily tagged txs with cumulative volume, and tx/volume per track.
 
-Scanning all wallets takes about 20 s. The function has `maxDuration: 60`, the CDN caches it for 15 minutes with a day of stale-while-revalidate, concurrent requests share one in-flight scan, and Blockscout 429s are retried with backoff. Wallets that still fail are reported (`failedWallets`) and shown on the page instead of silently counting as zero.
+Scanning every wallet takes about a minute (65 s for 74 projects on 2026-11-04) and grows with the hackathon, so the last complete result is kept in a private **Vercel Blob** (`onchain/latest.json`, store `openrails-onchain`, `BLOB_READ_WRITE_TOKEN`). Requests answer from that snapshot in about half a second; when it is older than 10 minutes, the same request starts a rescan in the background (`waitUntil`) that replaces it. A rescan only replaces the snapshot when every wallet was read, so one bad round never swaps good totals for lower ones. The function has `maxDuration: 300`, concurrent requests share one in-flight scan, each Blockscout request times out after 20 s, and 429s are retried with backoff. Wallets that still fail are reported (`failedWallets`) instead of silently counting as zero.
+
+While on-chain data loads (only on the very first scan, or without a Blob store locally), the page shows skeleton placeholders and a status line; once loaded the status shows how old the snapshot is.
 
 Known limits: tagged txs sent from a wallet other than the agent wallet (e.g. end users of a project's frontend) aren't counted; volume uses current rates, not the rate at transfer time; transfers between two agent wallets count for both projects.
 

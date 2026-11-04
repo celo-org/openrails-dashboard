@@ -175,3 +175,17 @@ test("concurrent requests share one scan; failed or partial scans are not reused
   assert.equal(partial, 2, "a scan with unread wallets is retried next time");
   resetOnchainMemo();
 });
+
+test("a request that never answers is aborted and retried instead of hanging the scan", async () => {
+  let calls = 0;
+  const fake = (url, opts) => new Promise((resolve, reject) => {
+    calls++;
+    if (calls === 1) { opts.signal.addEventListener("abort", () => reject(new DOMException("timeout", "TimeoutError"))); return; }
+    resolve({ ok: true, json: async () => ({ items: [], next_page_params: null }) });
+  });
+  const t = Date.now();
+  const keepAlive = setInterval(() => {}, 1000); // AbortSignal.timeout timers don't hold the event loop open
+  const { failed } = await loadActivity([{ id: "a", code: "celo_a", agentWallet: "0xA" }], "2026-10-06T12:00:00Z", { fetchImpl: fake, retry: { retries: 2, baseDelay: 1, timeoutMs: 50 } }).finally(() => clearInterval(keepAlive));
+  assert.equal(failed, 0);
+  assert.ok(Date.now() - t < 2000, "gave up on the hung request quickly");
+});

@@ -7,5 +7,11 @@
     "test": "node --test",
     "dev": "node --env-file-if-exists=.env.local dev-server.js"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "2.8.2",
+    "@vercel/functions": "3.10.1"
+  }
 }

@@ -21,7 +21,7 @@
   ],
   "functions": {
     "api/onchain.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   }
 }
