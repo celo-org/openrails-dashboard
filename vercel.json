@@ -39,27 +39,7 @@
   "rewrites": [
     {
       "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "stats.celobuilders.xyz"
-        }
-      ],
       "destination": "/stats/index.html"
-    },
-    {
-      "source": "/:slug([a-z0-9-]+)",
-      "has": [
-        {
-          "type": "host",
-          "value": "stats.celobuilders.xyz"
-        }
-      ],
-      "destination": "/stats/event.html"
-    },
-    {
-      "source": "/",
-      "destination": "/openrails.html"
     },
     {
       "source": "/stats",
@@ -67,6 +47,14 @@
     },
     {
       "source": "/stats/:slug([a-z0-9-]+)",
+      "destination": "/stats/event.html"
+    },
+    {
+      "source": "/openrails",
+      "destination": "/openrails.html"
+    },
+    {
+      "source": "/:slug([a-z0-9-]+)",
       "destination": "/stats/event.html"
     }
   ]

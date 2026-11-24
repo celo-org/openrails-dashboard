@@ -16,7 +16,7 @@
 <meta property="og:title" content="Celo Hackathon Stats">
 <meta property="og:description" content="Which city ships the most agents on Celo? Live city leaderboards for every Celo hackathon.">
 <meta property="og:url" content="https://stats.celobuilders.xyz/">
-<meta property="og:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta property="og:image" content="https://openrails-dashboard.vercel.app/og-stats-v1.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Celo Hackathon Stats: which city ships the most agents?">
@@ -24,7 +24,7 @@
 <meta name="twitter:site" content="@CeloDevs">
 <meta name="twitter:title" content="Celo Hackathon Stats">
 <meta name="twitter:description" content="Which city ships the most agents on Celo? Live city leaderboards for every Celo hackathon.">
-<meta name="twitter:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta name="twitter:image" content="https://openrails-dashboard.vercel.app/og-stats-v1.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,800&family=DM+Mono:wght@400;500&display=swap">
@@ -54,7 +54,8 @@
   </footer>
 </div>
 <script>
-const BASE = location.hostname.startsWith("stats.") ? "/" : "/stats/";
+// Served at / (and /<slug>) on every host; /stats/ remains an alias.
+const BASE = location.pathname.startsWith("/stats") ? "/stats/" : "/";
 const $ = (id) => document.getElementById(id);
 document.querySelector(".brand").href = BASE;
 function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}

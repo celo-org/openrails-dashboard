@@ -1,5 +1,4 @@
 // Local preview without Vercel: serves public/, /api/* and the stats routes on PORT (default 3456).
-// STATS_HOST=1 serves the stats site at / like stats.celobuilders.xyz does.
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, normalize } from "node:path";
@@ -10,14 +9,14 @@ import { loadHackathons } from "./api/hackathons.js";
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".css": "text/css; charset=utf-8" };
 const port = Number(process.env.PORT || 3456);
-const statsHost = process.env.STATS_HOST === "1";
 
+// Mirrors vercel.json rewrites.
 function route(path) {
-  if (statsHost && path === "/") return "/stats/index.html";
-  if (statsHost && /^\/[a-z0-9-]+$/.test(path)) return "/stats/event.html";
-  if (path === "/stats" || path === "/stats/") return "/stats/index.html";
+  if (path === "/" || path === "/stats" || path === "/stats/") return "/stats/index.html";
   if (/^\/stats\/[a-z0-9-]+$/.test(path)) return "/stats/event.html";
-  return path === "/" ? "/openrails.html" : path;
+  if (path === "/openrails") return "/openrails.html";
+  if (/^\/[a-z0-9-]+$/.test(path)) return "/stats/event.html";
+  return path;
 }
 
 createServer(async (req, res) => {

@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="Celo Builders">
 <meta property="og:title" content="Which city ships the most agents? · Celo Hackathon Stats">
 <meta property="og:description" content="Live city leaderboard for a Celo hackathon: submissions, volume and tracks by city.">
-<meta property="og:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta property="og:image" content="https://openrails-dashboard.vercel.app/og-stats-v1.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Celo Hackathon Stats: which city ships the most agents?">
@@ -22,7 +22,7 @@
 <meta name="twitter:site" content="@CeloDevs">
 <meta name="twitter:title" content="Which city ships the most agents? · Celo Hackathon Stats">
 <meta name="twitter:description" content="Live city leaderboard for a Celo hackathon: submissions, volume and tracks by city.">
-<meta name="twitter:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta name="twitter:image" content="https://openrails-dashboard.vercel.app/og-stats-v1.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,800&family=DM+Mono:wght@400;500&display=swap">
@@ -133,9 +133,8 @@
 </div>
 
 <script>
-// The page works on stats.celobuilders.xyz/<slug> and on <any host>/stats/<slug>.
-const ON_STATS_HOST = location.hostname.startsWith("stats.");
-const HOME = ON_STATS_HOST ? "/" : "/stats/";
+// Served at /<slug> on every host (openrails. and stats.celobuilders.xyz); /stats/<slug> remains an alias.
+const HOME = location.pathname.startsWith("/stats/") ? "/stats/" : "/";
 const SLUG = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
 const $ = (id) => document.getElementById(id);
 function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -348,7 +347,7 @@ function shareText(){
 }
 $("share").addEventListener("click", () => {
   if (!latest) return;
-  const page = `https://stats.celobuilders.xyz/${encodeURIComponent(SLUG)}`;
+  const page = `${location.origin}/${encodeURIComponent(SLUG)}`;
   const a = Object.assign(document.createElement("a"), { href: `https://x.com/intent/post?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent(page)}`, target: "_blank", rel: "noopener" });
   document.body.appendChild(a); a.click(); a.remove();
 });

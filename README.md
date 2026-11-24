@@ -8,17 +8,17 @@ Planned home: `openrails.celobuilders.xyz`.
 
 A city competition for every Celo hackathon: which cities register, ship, transact and move volume, which tracks each city ships for, daily participation, top projects and volume by currency.
 
-- `/` lists every hackathon in `lib/hackathons.js` with its status (upcoming, live, final) and headline totals; `/<slug>` is one hackathon. The same pages also work on any host under `/stats` and `/stats/<slug>`.
+- `/` lists every hackathon in `lib/hackathons.js` with its status (upcoming, live, final) and headline totals; `/<slug>` is one hackathon. This is the same on every host (openrails.celobuilders.xyz today, stats.celobuilders.xyz once its DNS exists); `/stats` and `/stats/<slug>` are aliases.
 - **Add a hackathon:** one entry in `lib/hackathons.js` (`slug`, `name`, `loopsSlug`, `loopsUrl`). Dates, tracks, projects and builders come from the Loops House API for that slug, with the same `LOOPS_API_KEY`.
 - **Official on-chain numbers come from Dune.** Give the hackathon a `dune` entry with the Celo team's query IDs (`perCode`: one row per attribution code with `tx_count`, `unique_users`, `volume_usd` and the `ripio_*`/`textile_*`/`buy_*`/`tether_*`/`cngn_*` columns; `daily`: `day, code, tx_count`; `totals`: a row with `unique_users`) and set `DUNE_API_KEY` in Vercel. `lib/dune.js` reads the last executed results (no re-execution) and only the metric columns, so builder names and handles in those queries never reach this app. Agents on Open Rails reads queries 8975671 / 9006033 / 8976481 and matches the official board exactly (21,421 tagged txs, $6,188,837.7). A hackathon without a `dune` entry, or a Dune error, falls back to the Blockscout scan of agent wallets, and the page says so.
 - Daily volume from the `daily` query isn't used: it is measured differently from `perCode` and would contradict the headline, so the daily chart shows transactions only.
 - `api/event.js?slug=&onchain=1` and `api/hackathons.js` serve the data; `lib/cities.js` does the city aggregation. Spellings of a city are grouped (accents, case, `City, Region`, a few aliases like CABA → Buenos Aires). A city is named only from 3 builders; smaller ones are summed as "Other cities".
 - On-chain activity per hackathon lives in a private Blob (`activity/<slug>.json`) holding per-project counts. It covers the hackathon's start to its submission deadline; a complete snapshot taken after the deadline is final and never rescanned, so finished hackathons keep their final numbers.
-- DNS: `stats.celobuilders.xyz` needs a CNAME to Vercel (`cname.vercel-dns.com`) and the domain added to this project.
+- DNS: `stats.celobuilders.xyz` is added to this Vercel project and needs `CNAME stats → eba01d8fed45ae88.vercel-dns-016.com` (the same target as `openrails`) in Cloudflare.
 
 ## How it works
 
-- `public/openrails.html`: the Open Rails page, served at `/` on every host except `stats.celobuilders.xyz` (see `vercel.json` rewrites; it isn't `index.html` because Vercel serves static files before rewrites, which would shadow the stats home). It calls `/api/stats` and `/api/onchain`.
+- `public/openrails.html`: the original Open Rails page, kept at `/openrails`. The stats site is what every host serves at `/` (see `vercel.json` rewrites; there is no `public/index.html` because Vercel serves static files before rewrites). It calls `/api/stats` and `/api/onchain`.
 - `api/stats.js`: Vercel function. It fetches the event payload from the Loops House API **server-side** and returns only aggregate counts. The API key and per-project data (names, wallets, repos, builder ids) never reach the browser.
 - `lib/aggregate.js`: counting logic over the payload's `counts`, `registrations` (`city`, `country`, `projectId`) and `projects` (`status`, `tracks`, `builderIds`, `hasIdentity`, `firstTaggedTx`, `repoUrl`):
   - **By city:** registrations by each builder's city; a project counts once in each city its team registered from. City names are normalised (accents, `CABA` → Buenos Aires, `San Salvador de Jujuy` → Jujuy).
