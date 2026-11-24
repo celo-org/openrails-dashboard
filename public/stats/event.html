@@ -57,8 +57,16 @@
     <div class="stat"><span class="eyebrow">Volume operated</span><span class="big" id="volume"><span class="skel num-s"></span></span></div>
     <div class="stat"><span class="eyebrow">Tagged transactions</span><span class="n" id="tagged"><span class="skel num-s"></span></span></div>
     <div class="stat"><span class="eyebrow">Agents transacting</span><span class="n" id="active"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Unique users</span><span class="n" id="users"><span class="skel num-s"></span></span></div>
     <span class="status" id="onchainStatus" role="status"><span class="dot"></span><span id="onchainStatusText">Reading every agent wallet on Celo mainnet. This can take up to a minute.</span></span>
   </section>
+
+  <section class="hero partners" id="partners" aria-label="Partner numbers" hidden>
+    <div class="stat"><span class="eyebrow">Ripio wFIAT txs</span><span class="n" id="pRipio">–</span><span class="sub small" id="pRipioV"></span></div>
+    <div class="stat"><span class="eyebrow">Textile FX txs</span><span class="n" id="pTextile">–</span><span class="sub small" id="pTextileV"></span></div>
+    <div class="stat"><span class="eyebrow">buy purchases</span><span class="n" id="pBuy">–</span><span class="sub small" id="pBuyV"></span></div>
+  </section>
+
 
   <section class="card" aria-labelledby="h-cities">
     <div class="head">
@@ -95,7 +103,7 @@
       <div id="daily"><span class="skel chart-s" aria-hidden="true"></span></div>
     </section>
     <section class="card" aria-labelledby="h-act">
-      <div class="head"><h2 id="h-act">On-chain activity</h2><div class="legend"><span><i style="background:var(--yellow)"></i>Tagged txs per day</span><span><i style="background:var(--fg)"></i>Cumulative volume</span></div></div>
+      <div class="head"><h2 id="h-act">On-chain activity</h2><div class="legend"><span><i style="background:var(--yellow)"></i>Tagged txs per day</span><span id="cumLegend"><i style="background:var(--fg)"></i>Cumulative volume</span></div></div>
       <div id="activity"><span class="skel chart-s" aria-hidden="true"></span></div>
     </section>
   </div>
@@ -106,7 +114,7 @@
       <div class="seg" role="group" aria-label="Sort projects by">
         <button type="button" data-psort="volumeUsd" aria-pressed="true">Volume</button>
         <button type="button" data-psort="tagged" aria-pressed="false">Transactions</button>
-        <button type="button" data-psort="counterparties" aria-pressed="false">Counterparties</button>
+        <button type="button" data-psort="counterparties" aria-pressed="false" data-users-label>Counterparties</button>
       </div>
     </div>
     <div class="table-wrap" id="projectsWrap"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
@@ -120,7 +128,7 @@
 
   <footer>
     <span id="updated"></span>
-    <span>Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline: <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side. Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
+    <span><span id="method">Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline (agent wallets only, so it can differ from official totals): <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side.</span> Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
   </footer>
 </div>
 
@@ -235,13 +243,13 @@ function renderActivity(){
   const bw = (W - L - R) / n, tmax = Math.max(1, ...days.map(d => d.tagged));
   let cum = 0; const cums = days.map(d => (cum += d.volumeUsd));
   const vmax = Math.max(1e-9, cum), y = (v, m) => T + (H - T - B) * (1 - v / m);
-  const bars = days.map((d, i) => `<rect x="${(L + i * bw + bw * .15).toFixed(1)}" y="${y(d.tagged, tmax).toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${(H - B - y(d.tagged, tmax)).toFixed(1)}" rx="2" fill="var(--yellow)"><title>${d.day}: ${d.tagged} tagged txs, ${usd(d.volumeUsd)} volume</title></rect>`).join("");
+  const bars = days.map((d, i) => `<rect x="${(L + i * bw + bw * .15).toFixed(1)}" y="${y(d.tagged, tmax).toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${(H - B - y(d.tagged, tmax)).toFixed(1)}" rx="2" fill="var(--yellow)"><title>${d.day}: ${d.tagged} tagged txs${cum > 0 ? `, ${usd(d.volumeUsd)} volume` : ""}</title></rect>`).join("");
   const pts = cums.map((c, i) => `${(L + i * bw + bw / 2).toFixed(1)},${y(c, vmax).toFixed(1)}`).join(" ");
-  $("activity").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tagged transactions per day and cumulative volume, ${days[0].day} to ${days.at(-1).day}">
+  $("activity").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tagged transactions per day${cum > 0 ? " and cumulative volume" : ""}, ${days[0].day} to ${days.at(-1).day}">
     <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>${bars}
-    <polyline points="${pts}" fill="none" stroke="var(--fg)" stroke-width="2" stroke-linejoin="round"/>
+    ${cum > 0 ? `<polyline points="${pts}" fill="none" stroke="var(--fg)" stroke-width="2" stroke-linejoin="round"/>
     <circle cx="${(L + (n - 1) * bw + bw / 2).toFixed(1)}" cy="${y(cum, vmax).toFixed(1)}" r="3.5" fill="var(--fg)"/>
-    <text x="${W - R}" y="${Math.max(12, y(cum, vmax) - 8).toFixed(1)}" text-anchor="end">${usd(cum)}</text>
+    <text x="${W - R}" y="${Math.max(12, y(cum, vmax) - 8).toFixed(1)}" text-anchor="end">${usd(cum)}</text>` : ""}
     <text x="${L}" y="12">max ${num(tmax)} txs/day</text><text x="${L}" y="${H - 6}">${days[0].day}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${days.at(-1).day}</text></svg>`;
 }
 
@@ -250,12 +258,12 @@ function renderProjects(){
   if (!p) return;
   const rows = [...p.submitted].sort((a, b) => (b[psort] ?? 0) - (a[psort] ?? 0) || b.volumeUsd - a.volumeUsd || a.name.localeCompare(b.name)).slice(0, 10);
   $("projectsWrap").innerHTML = !rows.length ? '<p class="sub">No submitted projects yet.</p>' : `
-    <table class="lb"><thead><tr><th>#</th><th>Project</th><th>Volume</th><th>Tagged txs</th><th>Counterparties</th></tr></thead>
+    <table class="lb"><thead><tr><th>#</th><th>Project</th><th>Volume</th><th>Tagged txs</th><th data-users-label>Counterparties</th></tr></thead>
     <tbody>${rows.map((r, i) => `<tr><td>${i + 1}</td>
       <td class="name">${r.url ? `<a href="${esc(r.url)}" rel="noopener" target="_blank">${esc(r.name)}</a>` : esc(r.name)}<br>${r.tracks.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</td>
       <td data-label="Volume" class="${psort === "volumeUsd" ? "strong" : ""}">${usd(r.volumeUsd)}</td>
       <td data-label="Tagged txs" class="${psort === "tagged" ? "strong" : ""}">${num(r.tagged)}</td>
-      <td data-label="Counterparties" class="${psort === "counterparties" ? "strong" : ""}">${num(r.counterparties)}</td></tr>`).join("")}</tbody></table>`;
+      <td data-label="${latest.source === "dune" ? "Users" : "Counterparties"}" class="${psort === "counterparties" ? "strong" : ""}">${num(r.counterparties)}</td></tr>`).join("")}</tbody></table>`;
   $("draftsNote").textContent = p.drafts.projects
     ? `Submitted projects only. ${plural(p.drafts.projects, "unsubmitted project")} not listed by name: ${num(p.drafts.tagged)} tagged txs and ${usd(p.drafts.volumeUsd)} volume between them.`
     : "Submitted projects only.";
@@ -266,6 +274,29 @@ function renderTokens(){
   const total = rows.reduce((n, r) => n + r.volumeUsd, 0), max = Math.max(1e-9, ...rows.map(r => r.volumeUsd));
   $("tokens").innerHTML = !rows.length ? '<p class="sub">No payments yet.</p>' : rows.map((r, i) => `
     <div class="tok"><b>${esc(r.label)}</b>${line(r.volumeUsd, max, i === 0 ? "--yellow" : "--reg")}<span class="vals"><strong>${usd(r.volumeUsd)}</strong> · ${total ? Math.round(r.volumeUsd / total * 100) : 0}%</span></div>`).join("");
+}
+
+
+// Wording and extra numbers that depend on where on-chain data came from (Dune or our scan).
+const METHOD = { dune: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain numbers are the official ones from Celo's <a id="duneLink" href="https://dune.com/celo" rel="noopener">Dune board</a>: <strong>tagged transactions</strong> are every transaction carrying the project's ERC-8021 attribution code, from any wallet; <strong>volume</strong> adds every token transfer inside those transactions (both legs of a swap) at Dune's prices; <strong>users</strong> are distinct senders. Partner numbers: Ripio = tagged txs that move a wFIAT token, Textile FX = tagged txs that touch Textile's order contract, buy = payments from the project's agent wallet to buy.`, blockscout: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline (agent wallets only, so it can differ from official totals): <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side.` };
+function renderSource(data){
+  const dune = data.source === "dune";
+  document.querySelectorAll("[data-users-label]").forEach(el => { el.textContent = dune ? "Users" : "Counterparties"; });
+  const cumLegend = $("cumLegend"); if (cumLegend) cumLegend.hidden = dune;
+  const m = $("method"); if (m) { m.innerHTML = METHOD[dune ? "dune" : "blockscout"]; const l = $("duneLink"); if (l && data.duneBoard) l.href = data.duneBoard; }
+  const t = data.totals, p = t.partners;
+  $("users").textContent = num(data.uniqueUsers ?? t.users);
+  $("partners").hidden = !p;
+  if (p) {
+    $("pRipio").textContent = num(p.ripioTx); $("pRipioV").textContent = usd(p.ripioVolume);
+    $("pTextile").textContent = num(p.textileTx); $("pTextileV").textContent = usd(p.textileVolume);
+    $("pBuy").textContent = num(p.buyTx); $("pBuyV").textContent = usd(p.buyVolume);
+  }
+  if (dune && !data.failedWallets) {
+    const when = data.duneUpdatedAt ? new Date(data.duneUpdatedAt).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+    $("onchainStatus").className = "status done";
+    $("onchainStatusText").innerHTML = `Official numbers from Celo's <a href="${esc(data.duneBoard || "https://dune.com/celo")}" rel="noopener" target="_blank">Dune board</a>${when ? `, updated ${esc(when)}` : ""}${data.final ? " · final" : ""}.`;
+  }
 }
 
 function render(data){
@@ -297,7 +328,7 @@ function render(data){
       ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.`
       : data.final ? "Final on-chain numbers, counted until the submission deadline."
       : `On-chain data as of ${age <= 1 ? "just now" : `${age} min ago`}${data.refreshing ? " · refreshing in the background" : ""}`;
-    renderProjects(); renderTokens(); renderActivity();
+    renderProjects(); renderTokens(); renderActivity(); renderSource(data);
   }
   renderCountries(); renderRank(); renderMatrix(); renderTracks(); renderDaily();
   $("updated").textContent = status === "final" ? "Final results." : `Updated ${new Date(data.updatedAt).toLocaleString()} · registrations refresh every minute, on-chain data every 10`;

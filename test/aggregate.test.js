@@ -63,7 +63,7 @@ test("aggregate counts each track once per project and reports readiness", () =>
     { label: "No track", projects: 1, submitted: 0, tagged: 0, volumeUsd: 0 },
   ]);
   assert.deepEqual(out.readiness, { projects: 2, withIdentity: 1, withTaggedTx: 1, withRepo: 1 });
-  assert.deepEqual(out.totals, { registrations: 5, projects: 2, submitted: 1, countries: 2, taggedTxs: 0, volumeUsd: 0, projectsWithTaggedTx: 0 });
+  assert.deepEqual(out.totals, { registrations: 5, projects: 2, submitted: 1, countries: 2, taggedTxs: 0, volumeUsd: 0, projectsWithTaggedTx: 0, users: 0, partners: null });
   assert.deepEqual(out.byDay.find((d) => d.day === "2026-10-12"), { day: "2026-10-12", registrations: 0, submitted: 1, tagged: 0, volumeUsd: 0 });
 });
 
