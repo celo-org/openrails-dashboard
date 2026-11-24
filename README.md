@@ -16,7 +16,7 @@ A city competition for every Celo hackathon: which cities register, ship, transa
 
 ## How it works
 
-- `public/index.html`: static page that calls `/api/stats` and refreshes every 5 minutes.
+- `public/openrails.html`: the Open Rails page, served at `/` on every host except `stats.celobuilders.xyz` (see `vercel.json` rewrites; it isn't `index.html` because Vercel serves static files before rewrites, which would shadow the stats home). It calls `/api/stats` and `/api/onchain`.
 - `api/stats.js`: Vercel function. It fetches the event payload from the Loops House API **server-side** and returns only aggregate counts. The API key and per-project data (names, wallets, repos, builder ids) never reach the browser.
 - `lib/aggregate.js`: counting logic over the payload's `counts`, `registrations` (`city`, `country`, `projectId`) and `projects` (`status`, `tracks`, `builderIds`, `hasIdentity`, `firstTaggedTx`, `repoUrl`):
   - **By city:** registrations by each builder's city; a project counts once in each city its team registered from. City names are normalised (accents, `CABA` → Buenos Aires, `San Salvador de Jujuy` → Jujuy).
@@ -49,7 +49,7 @@ Known limits: tagged txs sent from a wallet other than the agent wallet (e.g. en
 - `public/favicon-celo-v1.png`, `public/apple-touch-icon.png`: the icons celo.org serves (yellow square, black C), unmodified; `favicon.ico` is the same image at 16/32/48 px. The bare symbol isn't used as a favicon because its C is transparent and disappears on dark tabs.
 - Palette and type from the brand kit: Onyx `#000000`, Gypsum `#FCF6F1`, Prosperity Yellow `#FCFF52`, Inter and DM Mono. The page is dark-only on purpose: the yellow symbol reads poorly on light backgrounds.
 - `public/og-v1.png` (1200×630): social card. Its bars are decorative so the image never shows stale numbers.
-- Icon and OG files are versioned in their names (`-v1`) because browsers and X cache them by URL: when one changes, bump the name and the reference in `index.html`. `vercel.json` sets a one-day cache on them.
+- Icon and OG files are versioned in their names (`-v1`) because browsers and X cache them by URL: when one changes, bump the name and the references in `openrails.html` and `stats/`. `vercel.json` sets a one-day cache on them.
 - `og:image`, `og:url` and the share link use `https://openrails.celobuilders.xyz/`, so link previews work once the domain points at the deploy.
 
 ## Deploy (Vercel)

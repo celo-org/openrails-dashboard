@@ -58,6 +58,10 @@
       "destination": "/stats/event.html"
     },
     {
+      "source": "/",
+      "destination": "/openrails.html"
+    },
+    {
       "source": "/stats",
       "destination": "/stats/index.html"
     },

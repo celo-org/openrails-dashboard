@@ -17,7 +17,7 @@ function route(path) {
   if (statsHost && /^\/[a-z0-9-]+$/.test(path)) return "/stats/event.html";
   if (path === "/stats" || path === "/stats/") return "/stats/index.html";
   if (/^\/stats\/[a-z0-9-]+$/.test(path)) return "/stats/event.html";
-  return path === "/" ? "/index.html" : path;
+  return path === "/" ? "/openrails.html" : path;
 }
 
 createServer(async (req, res) => {
