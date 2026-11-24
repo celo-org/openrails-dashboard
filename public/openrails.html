@@ -408,12 +408,12 @@ function renderActivity(){
 
 
 // Wording and extra numbers that depend on where on-chain data came from (Dune or our scan).
-const METHOD = { dune: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain numbers are the official ones from Celo's <a id="duneLink" href="https://dune.com/celo" rel="noopener">Dune board</a>: <strong>tagged transactions</strong> are every transaction carrying the project's ERC-8021 attribution code, from any wallet; <strong>volume</strong> adds every token transfer inside those transactions (both legs of a swap) at Dune's prices; <strong>users</strong> are distinct senders. Partner numbers: Ripio = tagged txs that move a wFIAT token, Textile FX = tagged txs that touch Textile's order contract, buy = payments from the project's agent wallet to buy.`, blockscout: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline (agent wallets only, so it can differ from official totals): <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side.` };
+const METHOD = { dune: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain numbers are the official ones from Celo's Dune data: <strong>tagged transactions</strong> are every transaction carrying the project's ERC-8021 attribution code, from any wallet; <strong>volume</strong> adds every token transfer inside those transactions (both legs of a swap) at Dune's prices; <strong>users</strong> are distinct senders. Partner numbers: Ripio = tagged txs that move a wFIAT token, Textile FX = tagged txs that touch Textile's order contract, buy = payments from the project's agent wallet to buy.`, blockscout: `Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline (agent wallets only, so it can differ from official totals): <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side.` };
 function renderSource(data){
   const dune = data.source === "dune";
   document.querySelectorAll("[data-users-label]").forEach(el => { el.textContent = dune ? "Users" : "Counterparties"; });
   const cumLegend = $("cumLegend"); if (cumLegend) cumLegend.hidden = dune;
-  const m = $("method"); if (m) { m.innerHTML = METHOD[dune ? "dune" : "blockscout"]; const l = $("duneLink"); if (l && data.duneBoard) l.href = data.duneBoard; }
+  const m = $("method"); if (m) m.innerHTML = METHOD[dune ? "dune" : "blockscout"];
   const t = data.totals, p = t.partners;
   $("users").textContent = num(data.uniqueUsers ?? t.users);
   $("partners").hidden = !p;
@@ -425,7 +425,7 @@ function renderSource(data){
   if (dune && !data.failedWallets) {
     const when = data.duneUpdatedAt ? new Date(data.duneUpdatedAt).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
     $("onchainStatus").className = "status done";
-    $("onchainStatusText").innerHTML = `Official numbers from Celo's <a href="${esc(data.duneBoard || "https://dune.com/celo")}" rel="noopener" target="_blank">Dune board</a>${when ? `, updated ${esc(when)}` : ""}${data.final ? " · final" : ""}.`;
+    $("onchainStatusText").textContent = `Official numbers from Celo's Dune data${when ? `, updated ${when}` : ""}${data.final ? " · final" : ""}.`;
   }
 }
 
