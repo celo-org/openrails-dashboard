@@ -178,3 +178,36 @@ test("summarizeProject ignores activity after `until`", () => {
   assert.equal(out.tagged, 1);
   assert.equal(out.volumeUsd, 1);
 });
+
+test("with a past deadline, lists start at the deadline block instead of the newest item", async () => {
+  const urls = [];
+  const fake = async (url) => {
+    urls.push(url);
+    if (url.includes("module=block")) return { ok: true, json: async () => ({ status: "1", result: { blockNumber: "1000" } }) };
+    return { ok: true, json: async () => ({ items: [{ status: "ok", timestamp: "2026-10-20T00:00:00Z", raw_input: CALL + suffix("celo_a") }], next_page_params: null }) };
+  };
+  const { activity, failed, endBlock } = await loadActivity([{ id: "a", code: "celo_a", agentWallet: "0xA" }], "2026-10-06T12:00:00Z", { until: "2026-11-09T12:30:00Z", fetchImpl: fake });
+  assert.equal(endBlock, 1000);
+  assert.equal(failed, 0);
+  assert.equal(activity.get("a").tagged, 1);
+  const lists = urls.filter((u) => u.includes("/addresses/"));
+  assert.equal(lists.length, 2);
+  assert.ok(lists.every((u) => u.includes("block_number=1001")), "both lists begin just after the deadline block");
+});
+
+test("a list that runs out of pages before the window starts counts as an unread wallet, not as zero", async () => {
+  const fake = async () => ({ ok: true, json: async () => ({ items: [{ status: "ok", timestamp: "2026-11-20T00:00:00Z", raw_input: CALL }], next_page_params: { block_number: 5, index: 0 } }) });
+  const { activity, failed } = await loadActivity([{ id: "busy", code: "celo_b", agentWallet: "0xB" }], "2026-10-06T12:00:00Z", { fetchImpl: fake, maxPages: 3 });
+  assert.equal(failed, 1);
+  assert.equal(activity.has("busy"), false);
+});
+
+test("if the block lookup fails, scanning still works from the newest item", async () => {
+  const fake = async (url) => {
+    if (url.includes("module=block")) return { ok: false, status: 404 };
+    return { ok: true, json: async () => ({ items: [], next_page_params: null }) };
+  };
+  const { failed, endBlock } = await loadActivity([{ id: "a", code: "celo_a", agentWallet: "0xA" }], "2026-10-06T12:00:00Z", { until: "2026-11-09T12:30:00Z", fetchImpl: fake, retry: { retries: 0, baseDelay: 1 } });
+  assert.equal(endBlock, null);
+  assert.equal(failed, 0);
+});
