@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Hackathon City Leaderboard</title>
+<meta name="description" content="City leaderboard for a Celo hackathon: submissions, builders, transactions and volume by city, tracks by city and daily participation.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon-celo-v1.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Celo Builders">
+<meta property="og:title" content="Which city ships the most agents? · Celo Hackathon Stats">
+<meta property="og:description" content="Live city leaderboard for a Celo hackathon: submissions, volume and tracks by city.">
+<meta property="og:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Celo Hackathon Stats: which city ships the most agents?">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@CeloDevs">
+<meta name="twitter:title" content="Which city ships the most agents? · Celo Hackathon Stats">
+<meta name="twitter:description" content="Live city leaderboard for a Celo hackathon: submissions, volume and tracks by city.">
+<meta name="twitter:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,800&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/stats/stats.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="brandbar">
+    <a class="brand" id="homeLink" href="/" aria-label="All hackathons">
+      <img src="/brand/Celo_Symbol_RGB_ProsperityYellow.svg" alt="Celo">
+      <span><b>Celo Hackathon Stats</b><small>Celo Devs · Celo Builders</small></span>
+    </a>
+    <div class="links"><a id="homeLink2" href="/">All hackathons</a><a id="loopsLink" href="https://www.loops.house" rel="noopener">Loops House page ↗</a></div>
+  </div>
+
+  <header>
+    <span class="pill" id="statusPill">Loading</span>
+    <h1 id="title">Which city ships the most agents?</h1>
+    <p class="sub" id="dates"></p>
+    <div id="banner" class="banner" hidden>Example data. The Loops House API key isn't configured yet, so these numbers are placeholders.</div>
+  </header>
+
+  <section class="hero" aria-label="Totals">
+    <div class="stat"><span class="eyebrow">Submitted</span><span class="big" id="submitted"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Projects started</span><span class="n" id="projects"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Builders</span><span class="n" id="builders"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Cities</span><span class="n" id="cities"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Countries</span><span class="n" id="countries"><span class="skel num-s"></span></span></div>
+  </section>
+
+  <section class="hero onchain" aria-label="On-chain totals">
+    <div class="stat"><span class="eyebrow">Volume operated</span><span class="big" id="volume"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Tagged transactions</span><span class="n" id="tagged"><span class="skel num-s"></span></span></div>
+    <div class="stat"><span class="eyebrow">Agents transacting</span><span class="n" id="active"><span class="skel num-s"></span></span></div>
+    <span class="status" id="onchainStatus" role="status"><span class="dot"></span><span id="onchainStatusText">Reading every agent wallet on Celo mainnet. This can take up to a minute.</span></span>
+  </section>
+
+  <section class="card" aria-labelledby="h-cities">
+    <div class="head">
+      <h2 id="h-cities">City leaderboard</h2>
+      <button class="share" type="button" id="share" aria-label="Share the city leaderboard on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 1.2h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.2h7.6l5.2 6.9 6.1-6.9Zm-1.3 19.4h2L6.5 3.2H4.3l13.3 17.4Z"/></svg>Share</button>
+    </div>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Rank cities by">
+        <button type="button" data-metric="submitted" aria-pressed="true">Submissions</button>
+        <button type="button" data-metric="builders" aria-pressed="false">Builders</button>
+        <button type="button" data-metric="volumeUsd" aria-pressed="false" disabled>Volume</button>
+        <button type="button" data-metric="tagged" aria-pressed="false" disabled>Transactions</button>
+      </div>
+      <label class="sr-only" for="country" hidden>Country</label>
+      <select id="country" aria-label="Filter by country"><option value="">All countries</option></select>
+    </div>
+    <ol class="rank" id="rank"><li><div class="skel-stack" aria-hidden="true" style="grid-column:1/-1"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></li></ol>
+    <p class="sub small" id="rankNote">A project counts in every city its team registered from. Cities appear by name from 3 builders; smaller ones are summed as "Other cities".</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-matrix">
+    <div class="head"><h2 id="h-matrix">Which tracks each city ships for</h2><span class="sub small">Submitted projects, top cities</span></div>
+    <div class="table-wrap" id="matrix"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-tracks">
+    <h2 id="h-tracks">Tracks</h2>
+    <div class="tracks" id="tracks"><span class="skel" style="height:110px"></span><span class="skel" style="height:110px"></span></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="h-daily">
+      <div class="head"><h2 id="h-daily">Daily participation</h2><div class="legend"><span><i style="background:var(--reg)"></i>Registrations</span><span><i style="background:var(--sub)"></i>Submissions</span></div></div>
+      <div id="daily"><span class="skel chart-s" aria-hidden="true"></span></div>
+    </section>
+    <section class="card" aria-labelledby="h-act">
+      <div class="head"><h2 id="h-act">On-chain activity</h2><div class="legend"><span><i style="background:var(--yellow)"></i>Tagged txs per day</span><span><i style="background:var(--fg)"></i>Cumulative volume</span></div></div>
+      <div id="activity"><span class="skel chart-s" aria-hidden="true"></span></div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="h-proj">
+    <div class="head">
+      <h2 id="h-proj">Top projects</h2>
+      <div class="seg" role="group" aria-label="Sort projects by">
+        <button type="button" data-psort="volumeUsd" aria-pressed="true">Volume</button>
+        <button type="button" data-psort="tagged" aria-pressed="false">Transactions</button>
+        <button type="button" data-psort="counterparties" aria-pressed="false">Counterparties</button>
+      </div>
+    </div>
+    <div class="table-wrap" id="projectsWrap"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
+    <p class="sub small" id="draftsNote"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-tok">
+    <h2 id="h-tok">Volume by currency</h2>
+    <div class="tokens" id="tokens"><div class="skel-stack" aria-hidden="true"><span class="skel row-s"></span><span class="skel row-s"></span><span class="skel row-s"></span></div></div>
+  </section>
+
+  <footer>
+    <span id="updated"></span>
+    <span>Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>. On-chain data from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>, read for each project's agent wallet between the hackathon's start and its submission deadline: <strong>tagged transactions</strong> carry the project's ERC-8021 attribution tag; <strong>volume</strong> adds stablecoin, wFIAT, cNGN and CELO transfers in and out of the agent wallet at current exchange rates; <strong>counterparties</strong> are distinct wallets on the other side. Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
+  </footer>
+</div>
+
+<script>
+// The page works on stats.celobuilders.xyz/<slug> and on <any host>/stats/<slug>.
+const ON_STATS_HOST = location.hostname.startsWith("stats.");
+const HOME = ON_STATS_HOST ? "/" : "/stats/";
+const SLUG = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "");
+const $ = (id) => document.getElementById(id);
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const pct = (n, max) => (max ? Math.min(100, Math.max(n ? 1.5 : 0, n / max * 100)) : 0).toFixed(1) + "%";
+const line = (n, max, color) => `<span class="line"><b style="width:${pct(n,max)};background:var(${color})"></b></span>`;
+const usd = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: n >= 10000 ? "compact" : "standard", maximumFractionDigits: n >= 10000 ? 1 : 0 }).format(n || 0);
+const num = (n) => new Intl.NumberFormat("en-US").format(n || 0);
+const plural = (n, w) => `${num(n)} ${w}${n === 1 ? "" : "s"}`;
+const dateTime = (iso) => new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+let latest = null, metric = "submitted", psort = "volumeUsd", country = "";
+
+$("homeLink").href = HOME; $("homeLink2").href = HOME;
+
+const METRIC = {
+  submitted: { big: (c) => num(c.submitted), unit: (c) => c.submitted === 1 ? "submitted" : "submitted", share: (c) => `${plural(c.submitted, "project")} submitted`, title: "ships the most agents" },
+  builders: { big: (c) => num(c.builders), unit: (c) => c.builders === 1 ? "builder" : "builders", share: (c) => plural(c.builders, "builder"), title: "has the most builders" },
+  volumeUsd: { big: (c) => usd(c.volumeUsd), unit: () => "volume", share: (c) => `${usd(c.volumeUsd)} operated`, title: "moves the most volume" },
+  tagged: { big: (c) => num(c.tagged), unit: (c) => c.tagged === 1 ? "tx" : "txs", share: (c) => plural(c.tagged, "tagged tx"), title: "sends the most agent transactions" },
+};
+
+function ranked(){
+  return (latest?.cities ?? [])
+    .filter(c => c.named && (!country || c.country === country))
+    .sort((a, b) => (b[metric] ?? 0) - (a[metric] ?? 0) || b.submitted - a.submitted || b.builders - a.builders || a.label.localeCompare(b.label));
+}
+
+function renderRank(){
+  const rows = ranked().slice(0, 15), M = METRIC[metric];
+  const max = Math.max(1e-9, ...rows.map(r => r[metric] ?? 0));
+  $("rank").innerHTML = !rows.length ? "<li>No named cities yet. Cities appear from 3 builders.</li>" : rows.map((c, i) => {
+    const bits = [];
+    if (metric !== "submitted") bits.push(`${num(c.submitted)} submitted`);
+    if (metric !== "builders") bits.push(plural(c.builders, "builder"));
+    bits.push(plural(c.projects, "project"));
+    if (latest.onchain) {
+      if (metric !== "tagged") bits.push(`${num(c.tagged)} txs`);
+      if (metric !== "volumeUsd") bits.push(usd(c.volumeUsd));
+    }
+    return `<li aria-label="${i + 1}. ${esc(c.label)}: ${M.share(c)}; ${bits.join(", ")}">
+      <span class="pos">${i + 1}</span>
+      <span class="city">${esc(c.label)}${c.country ? ` <small>${esc(c.country)}</small>` : ""}</span>
+      <span class="count"><b>${M.big(c)}</b>${M.unit(c)}</span>
+      <span class="bar"><b style="width:${pct(c[metric] ?? 0, max)}"></b></span>
+      <span class="meta">${bits.join(" · ")}</span>
+    </li>`;
+  }).join("");
+}
+
+function renderCountries(){
+  const sel = $("country"), current = sel.value;
+  const counts = new Map();
+  for (const c of latest.cities) if (c.named && c.country) counts.set(c.country, (counts.get(c.country) ?? 0) + 1);
+  const opts = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  sel.innerHTML = `<option value="">All countries</option>` + opts.map(([c, n]) => `<option value="${esc(c)}">${esc(c)} (${n})</option>`).join("");
+  sel.value = opts.some(([c]) => c === current) ? current : "";
+  country = sel.value;
+}
+
+function renderMatrix(){
+  const tracks = latest.tracks ?? [];
+  const cities = (latest.cities ?? []).filter(c => c.named && c.submitted > 0).sort((a, b) => b.submitted - a.submitted || a.label.localeCompare(b.label)).slice(0, 12);
+  if (!tracks.length || !cities.length) { $("matrix").innerHTML = '<p class="sub">No submissions yet.</p>'; return; }
+  const max = Math.max(1, ...cities.flatMap(c => tracks.map(t => c.tracks[t] ?? 0)));
+  const cell = (n) => {
+    const a = n ? (0.18 + 0.82 * n / max) : 0;
+    return `<td class="cell"><span style="background:rgba(252,255,82,${a.toFixed(2)});color:${a > .55 ? "var(--on-yellow)" : "var(--fg)"}">${n || "·"}</span></td>`;
+  };
+  $("matrix").innerHTML = `<table class="matrix"><thead><tr><th>City</th>${tracks.map(t => `<th>${esc(t)}</th>`).join("")}<th>Submitted</th></tr></thead>
+    <tbody>${cities.map(c => `<tr><td>${esc(c.label)} <small>${esc(c.country ?? "")}</small></td>${tracks.map(t => cell(c.tracks[t] ?? 0)).join("")}<td class="total">${num(c.submitted)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+function renderTracks(){
+  $("tracks").innerHTML = (latest.byTrack ?? []).map(t => `
+    <div class="track">
+      <h3>${esc(t.label)}</h3>
+      <div class="k"><span>Submitted</span><b>${num(t.submitted)} / ${num(t.projects)}</b></div>
+      ${latest.onchain ? `<div class="k"><span>Tagged txs</span><b>${num(t.tagged)}</b></div><div class="k"><span>Volume</span><b>${usd(t.volumeUsd)}</b></div>` : ""}
+      <div class="top">${t.topCity ? `Top city: <b>${esc(t.topCity.label)}</b> · ${plural(t.topCity.submitted, "submission")}` : "No named city yet"}</div>
+    </div>`).join("") || '<p class="sub">No tracks yet.</p>';
+}
+
+function barsChart(days, keys, colors, label){
+  const W = 560, H = 190, L = 8, R = 8, T = 22, B = 22, n = days.length;
+  const bw = (W - L - R) / n, max = Math.max(1, ...days.map(d => keys.reduce((s, k) => s + d[k], 0)));
+  const y = (v) => (H - T - B) * v / max;
+  const bars = days.map((d, i) => {
+    let base = H - B;
+    return keys.map((k, j) => { const h = y(d[k]); base -= h; return `<rect x="${(L + i * bw + bw * .15).toFixed(1)}" y="${base.toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${h.toFixed(1)}" fill="var(${colors[j]})"><title>${d.day}: ${keys.map(kk => `${d[kk]} ${kk}`).join(", ")}</title></rect>`; }).join("");
+  }).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}, ${days[0].day} to ${days.at(-1).day}">
+    <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>${bars}
+    <text x="${L}" y="12">max ${num(max)}/day</text><text x="${L}" y="${H - 6}">${days[0].day}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${days.at(-1).day}</text></svg>`;
+}
+
+function renderDaily(){
+  const days = (latest.byDay ?? []).filter(d => d.registrations || d.submitted);
+  $("daily").innerHTML = days.length ? barsChart(days, ["registrations", "submitted"], ["--reg", "--sub"], "Registrations and submissions per day") : '<p class="sub">No activity yet.</p>';
+}
+
+function renderActivity(){
+  const first = (latest.byDay ?? []).find(x => x.tagged || x.volumeUsd)?.day;
+  const days = first ? latest.byDay.filter(d => d.day >= first) : [];
+  if (!days.length) { $("activity").innerHTML = '<p class="sub">No tagged transactions yet.</p>'; return; }
+  const W = 560, H = 190, L = 8, R = 8, T = 22, B = 22, n = days.length;
+  const bw = (W - L - R) / n, tmax = Math.max(1, ...days.map(d => d.tagged));
+  let cum = 0; const cums = days.map(d => (cum += d.volumeUsd));
+  const vmax = Math.max(1e-9, cum), y = (v, m) => T + (H - T - B) * (1 - v / m);
+  const bars = days.map((d, i) => `<rect x="${(L + i * bw + bw * .15).toFixed(1)}" y="${y(d.tagged, tmax).toFixed(1)}" width="${(bw * .7).toFixed(1)}" height="${(H - B - y(d.tagged, tmax)).toFixed(1)}" rx="2" fill="var(--yellow)"><title>${d.day}: ${d.tagged} tagged txs, ${usd(d.volumeUsd)} volume</title></rect>`).join("");
+  const pts = cums.map((c, i) => `${(L + i * bw + bw / 2).toFixed(1)},${y(c, vmax).toFixed(1)}`).join(" ");
+  $("activity").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tagged transactions per day and cumulative volume, ${days[0].day} to ${days.at(-1).day}">
+    <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>${bars}
+    <polyline points="${pts}" fill="none" stroke="var(--fg)" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${(L + (n - 1) * bw + bw / 2).toFixed(1)}" cy="${y(cum, vmax).toFixed(1)}" r="3.5" fill="var(--fg)"/>
+    <text x="${W - R}" y="${Math.max(12, y(cum, vmax) - 8).toFixed(1)}" text-anchor="end">${usd(cum)}</text>
+    <text x="${L}" y="12">max ${num(tmax)} txs/day</text><text x="${L}" y="${H - 6}">${days[0].day}</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${days.at(-1).day}</text></svg>`;
+}
+
+function renderProjects(){
+  const p = latest?.projects;
+  if (!p) return;
+  const rows = [...p.submitted].sort((a, b) => (b[psort] ?? 0) - (a[psort] ?? 0) || b.volumeUsd - a.volumeUsd || a.name.localeCompare(b.name)).slice(0, 10);
+  $("projectsWrap").innerHTML = !rows.length ? '<p class="sub">No submitted projects yet.</p>' : `
+    <table class="lb"><thead><tr><th>#</th><th>Project</th><th>Volume</th><th>Tagged txs</th><th>Counterparties</th></tr></thead>
+    <tbody>${rows.map((r, i) => `<tr><td>${i + 1}</td>
+      <td class="name">${r.url ? `<a href="${esc(r.url)}" rel="noopener" target="_blank">${esc(r.name)}</a>` : esc(r.name)}<br>${r.tracks.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</td>
+      <td data-label="Volume" class="${psort === "volumeUsd" ? "strong" : ""}">${usd(r.volumeUsd)}</td>
+      <td data-label="Tagged txs" class="${psort === "tagged" ? "strong" : ""}">${num(r.tagged)}</td>
+      <td data-label="Counterparties" class="${psort === "counterparties" ? "strong" : ""}">${num(r.counterparties)}</td></tr>`).join("")}</tbody></table>`;
+  $("draftsNote").textContent = p.drafts.projects
+    ? `Submitted projects only. ${plural(p.drafts.projects, "unsubmitted project")} not listed by name: ${num(p.drafts.tagged)} tagged txs and ${usd(p.drafts.volumeUsd)} volume between them.`
+    : "Submitted projects only.";
+}
+
+function renderTokens(){
+  const rows = latest.byToken ?? [];
+  const total = rows.reduce((n, r) => n + r.volumeUsd, 0), max = Math.max(1e-9, ...rows.map(r => r.volumeUsd));
+  $("tokens").innerHTML = !rows.length ? '<p class="sub">No payments yet.</p>' : rows.map((r, i) => `
+    <div class="tok"><b>${esc(r.label)}</b>${line(r.volumeUsd, max, i === 0 ? "--yellow" : "--reg")}<span class="vals"><strong>${usd(r.volumeUsd)}</strong> · ${total ? Math.round(r.volumeUsd / total * 100) : 0}%</span></div>`).join("");
+}
+
+function render(data){
+  latest = data;
+  document.title = `${data.hackathon.name} City Stats`;
+  $("title").textContent = data.hackathon.name;
+  $("loopsLink").href = data.hackathon.loopsUrl;
+  $("banner").hidden = !data.sample;
+  const status = data.status ?? "live";
+  $("statusPill").className = `pill ${status}`;
+  $("statusPill").textContent = { live: "Live", final: "Final results", upcoming: "Upcoming" }[status] ?? status;
+  if (data.event) {
+    const end = data.event.submissionDeadline;
+    const left = end ? new Date(end) - Date.now() : 0;
+    const countdown = status === "live" && left > 0 ? ` · ${Math.floor(left / 86400000)}d ${Math.floor(left / 3600000) % 24}h left` : "";
+    $("dates").textContent = `${data.event.startsAt ? new Date(data.event.startsAt).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : ""} – ${end ? dateTime(end) : ""}${status === "final" ? " · submissions closed, these are the final numbers" : countdown}`;
+  }
+  const t = data.totals;
+  $("submitted").textContent = num(t.submitted); $("projects").textContent = num(t.projects);
+  $("builders").textContent = num(t.builders); $("cities").textContent = num(t.cities); $("countries").textContent = num(t.countries);
+  document.querySelectorAll('[data-metric="volumeUsd"],[data-metric="tagged"]').forEach(b => { b.disabled = !data.onchain; });
+  if (data.onchain) {
+    $("volume").textContent = usd(t.volumeUsd);
+    $("tagged").textContent = num(t.taggedTxs);
+    $("active").textContent = `${num(t.projectsWithTaggedTx)} / ${num(t.projects)}`;
+    const age = data.snapshotAt ? Math.round((Date.now() - new Date(data.snapshotAt)) / 60000) : 0;
+    $("onchainStatus").className = "status " + (data.failedWallets ? "stale" : "done");
+    $("onchainStatusText").textContent = data.failedWallets
+      ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.`
+      : data.final ? "Final on-chain numbers, counted until the submission deadline."
+      : `On-chain data as of ${age <= 1 ? "just now" : `${age} min ago`}${data.refreshing ? " · refreshing in the background" : ""}`;
+    renderProjects(); renderTokens(); renderActivity();
+  }
+  renderCountries(); renderRank(); renderMatrix(); renderTracks(); renderDaily();
+  $("updated").textContent = status === "final" ? "Final results." : `Updated ${new Date(data.updatedAt).toLocaleString()} · registrations refresh every minute, on-chain data every 10`;
+}
+
+// X post under 280 characters: the link counts as 23, emoji double, plus a margin.
+function shareText(){
+  const M = METRIC[metric], rows = ranked().filter(c => (c[metric] ?? 0) > 0);
+  const head = `🌎 Which city ${M.title} in ${latest.hackathon.name} on @Celo?`;
+  const tail = "Live city leaderboard by @CeloDevs 👇";
+  for (let n = Math.min(5, rows.length); n >= 1; n--) {
+    const text = `${head}\n\n${rows.slice(0, n).map((c, i) => `${i + 1}. ${c.label}${c.country ? `, ${c.country}` : ""}: ${M.share(c)}`).join("\n")}\n\n${tail}`;
+    const emoji = (text.match(/\p{Extended_Pictographic}|\p{Regional_Indicator}/gu) ?? []).length;
+    if ([...text].length + emoji + 1 + 23 <= 265) return text;
+  }
+  return `${head}\n\n${tail}`;
+}
+$("share").addEventListener("click", () => {
+  if (!latest) return;
+  const page = `https://stats.celobuilders.xyz/${encodeURIComponent(SLUG)}`;
+  const a = Object.assign(document.createElement("a"), { href: `https://x.com/intent/post?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent(page)}`, target: "_blank", rel: "noopener" });
+  document.body.appendChild(a); a.click(); a.remove();
+});
+const press = (attr, v) => document.querySelectorAll(`[${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.getAttribute(attr) === v)));
+document.querySelectorAll("[data-metric]").forEach(b => b.addEventListener("click", () => { if (b.disabled) return; metric = b.dataset.metric; press("data-metric", metric); renderRank(); }));
+document.querySelectorAll("[data-psort]").forEach(b => b.addEventListener("click", () => { psort = b.dataset.psort; press("data-psort", psort); renderProjects(); }));
+$("country").addEventListener("change", (e) => { country = e.target.value; renderRank(); });
+
+async function get(onchain){
+  const res = await fetch(`/api/event?slug=${encodeURIComponent(SLUG)}${onchain ? "&onchain=1" : ""}`);
+  const data = await res.json();
+  if (!res.ok) throw Object.assign(new Error(data.error || `Request failed (${res.status})`), { status: res.status });
+  return data;
+}
+async function loadFast(){
+  try { const d = await get(false); if (!latest?.onchain) render(d); }
+  catch (e) {
+    if (e.status === 404) { location.replace(HOME); return; }
+    if (!latest) $("rank").innerHTML = `<li class="err">Couldn't load this hackathon: ${esc(e.message)}</li>`;
+  }
+}
+async function loadOnchain(){
+  try { render(await get(true)); }
+  catch (e) {
+    $("onchainStatus").className = "status stale";
+    $("onchainStatusText").textContent = `Couldn't read on-chain data (${e.message}). Retrying in a minute.`;
+    setTimeout(loadOnchain, 60 * 1000);
+  }
+}
+if (!SLUG || SLUG === "stats") location.replace(HOME);
+else { loadFast(); loadOnchain(); setInterval(() => { if (latest?.status !== "final") { loadOnchain(); } }, 10 * 60 * 1000); }
+</script>
+</body>
+</html>

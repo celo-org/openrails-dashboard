@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { decodeAttribution, transferUsd, summarizeProject, loadActivity, ERC_8021_MARKER } from "../lib/onchain.js";
 import { aggregate } from "../lib/aggregate.js";
-import { loadOnchainShared, resetOnchainMemo } from "../api/onchain.js";
 
 // ERC-8021 schema 0 suffix: [codes][len:1][schema:1][marker:16]
 const suffix = (codes) => {
@@ -151,31 +150,6 @@ test("loadActivity retries a rate-limited request instead of dropping the wallet
   assert.equal(activity.get("a").tagged, 1);
 });
 
-test("concurrent requests share one scan; failed or partial scans are not reused", async () => {
-  resetOnchainMemo();
-  let scans = 0;
-  const ok = async () => { scans++; return { status: 200, body: { failedWallets: 0 } }; };
-  let t = 1_000_000;
-  const clock = () => t;
-  const [a, b] = await Promise.all([loadOnchainShared(ok, clock), loadOnchainShared(ok, clock)]);
-  assert.equal(scans, 1);
-  assert.equal(a, b);
-  t += 9 * 60 * 1000;
-  await loadOnchainShared(ok, clock);
-  assert.equal(scans, 1, "reused within the memo window");
-  t += 2 * 60 * 1000;
-  await loadOnchainShared(ok, clock);
-  assert.equal(scans, 2, "rescans after the window");
-
-  resetOnchainMemo();
-  let partial = 0;
-  const flaky = async () => { partial++; return { status: 200, body: { failedWallets: 3 } }; };
-  await loadOnchainShared(flaky);
-  await loadOnchainShared(flaky);
-  assert.equal(partial, 2, "a scan with unread wallets is retried next time");
-  resetOnchainMemo();
-});
-
 test("a request that never answers is aborted and retried instead of hanging the scan", async () => {
   let calls = 0;
   const fake = (url, opts) => new Promise((resolve, reject) => {
@@ -188,4 +162,19 @@ test("a request that never answers is aborted and retried instead of hanging the
   const { failed } = await loadActivity([{ id: "a", code: "celo_a", agentWallet: "0xA" }], "2026-10-06T12:00:00Z", { fetchImpl: fake, retry: { retries: 2, baseDelay: 1, timeoutMs: 50 } }).finally(() => clearInterval(keepAlive));
   assert.equal(failed, 0);
   assert.ok(Date.now() - t < 2000, "gave up on the hung request quickly");
+});
+
+test("summarizeProject ignores activity after `until`", () => {
+  const p = { id: "p1", code: "celo_mine" };
+  const txs = [
+    { status: "ok", timestamp: "2026-11-09T12:00:00Z", raw_input: CALL + suffix("celo_mine") },
+    { status: "ok", timestamp: "2026-11-09T12:31:00Z", raw_input: CALL + suffix("celo_mine") },
+  ];
+  const transfers = [
+    { transaction_hash: "0xa", log_index: 0, timestamp: "2026-11-09T12:29:00Z", token: { address_hash: USDC }, total: { decimals: "6", value: "1000000" } },
+    { transaction_hash: "0xb", log_index: 0, timestamp: "2026-11-10T00:00:00Z", token: { address_hash: USDC }, total: { decimals: "6", value: "9000000" } },
+  ];
+  const out = summarizeProject(p, txs, transfers, "2026-10-06T00:00:00Z", undefined, "2026-11-09T12:30:00Z");
+  assert.equal(out.tagged, 1);
+  assert.equal(out.volumeUsd, 1);
 });

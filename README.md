@@ -1,8 +1,18 @@
-# Open Rails City Ranking
+# Open Rails City Ranking + Celo Hackathon Stats
 
 Live ranking of the cities building for [Agents on Open Rails](https://www.loops.house/agents-on-open-rails), the Celo hackathon: Argentina's six builder cities (Buenos Aires, Córdoba, Rosario, Mar del Plata, Salta, Jujuy) vs the world, plus tracks, judging readiness and daily activity.
 
 Planned home: `openrails.celobuilders.xyz`.
+
+## Celo Hackathon Stats (stats.celobuilders.xyz)
+
+A city competition for every Celo hackathon: which cities register, ship, transact and move volume, which tracks each city ships for, daily participation, top projects and volume by currency.
+
+- `/` lists every hackathon in `lib/hackathons.js` with its status (upcoming, live, final) and headline totals; `/<slug>` is one hackathon. The same pages also work on any host under `/stats` and `/stats/<slug>`.
+- **Add a hackathon:** one entry in `lib/hackathons.js` (`slug`, `name`, `loopsSlug`, `loopsUrl`). Dates, tracks, projects and builders come from the Loops House API for that slug, with the same `LOOPS_API_KEY`.
+- `api/event.js?slug=&onchain=1` and `api/hackathons.js` serve the data; `lib/cities.js` does the city aggregation. Spellings of a city are grouped (accents, case, `City, Region`, a few aliases like CABA → Buenos Aires). A city is named only from 3 builders; smaller ones are summed as "Other cities".
+- On-chain activity per hackathon lives in a private Blob (`activity/<slug>.json`) holding per-project counts. It covers the hackathon's start to its submission deadline; a complete snapshot taken after the deadline is final and never rescanned, so finished hackathons keep their final numbers.
+- DNS: `stats.celobuilders.xyz` needs a CNAME to Vercel (`cname.vercel-dns.com`) and the domain added to this project.
 
 ## How it works
 

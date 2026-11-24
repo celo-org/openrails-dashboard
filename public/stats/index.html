@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Celo Hackathon Stats</title>
+<meta name="description" content="Live and final stats for Celo hackathons: which cities ship the most agents, move the most volume, and pick which tracks.">
+<link rel="canonical" href="https://stats.celobuilders.xyz/">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/favicon-celo-v1.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Celo Builders">
+<meta property="og:title" content="Celo Hackathon Stats">
+<meta property="og:description" content="Which city ships the most agents on Celo? Live city leaderboards for every Celo hackathon.">
+<meta property="og:url" content="https://stats.celobuilders.xyz/">
+<meta property="og:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Celo Hackathon Stats: which city ships the most agents?">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@CeloDevs">
+<meta name="twitter:title" content="Celo Hackathon Stats">
+<meta name="twitter:description" content="Which city ships the most agents on Celo? Live city leaderboards for every Celo hackathon.">
+<meta name="twitter:image" content="https://stats.celobuilders.xyz/og-stats-v1.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,800&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/stats/stats.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="brandbar">
+    <a class="brand" href="/" aria-label="Celo Hackathon Stats home">
+      <img src="/brand/Celo_Symbol_RGB_ProsperityYellow.svg" alt="Celo">
+      <span><b>Celo Hackathon Stats</b><small>Celo Devs · Celo Builders</small></span>
+    </a>
+    <div class="links"><a href="https://celo.org" rel="noopener">Built on Celo ↗</a></div>
+  </div>
+
+  <header>
+    <h1>Which city ships the most agents?</h1>
+    <p class="sub">Every Celo hackathon as a competition between cities: who registers, who ships, which tracks they pick and how much value their agents move on Celo mainnet. Pick a hackathon.</p>
+  </header>
+
+  <div class="events" id="events">
+    <div class="skel-stack" aria-hidden="true"><span class="skel" style="height:120px"></span><span class="skel" style="height:120px"></span></div>
+  </div>
+
+  <footer>
+    <span>Registrations and projects from <a href="https://www.loops.house" rel="noopener">Loops House</a>; on-chain activity from <a href="https://celo.blockscout.com" rel="noopener">Blockscout</a>. Celo symbol from the <a href="https://celo.org/brand-kit" rel="noopener">Celo brand kit</a>.</span>
+  </footer>
+</div>
+<script>
+const BASE = location.hostname.startsWith("stats.") ? "/" : "/stats/";
+const $ = (id) => document.getElementById(id);
+document.querySelector(".brand").href = BASE;
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+const num = (n) => new Intl.NumberFormat("en-US").format(n || 0);
+const date = (iso) => iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+const STATUS = { live: "Live", final: "Final", upcoming: "Upcoming" };
+
+async function load(){
+  try {
+    const res = await fetch("/api/hackathons");
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    $("events").innerHTML = data.hackathons.map(h => h.error ? `
+      <div class="event"><div><h2>${esc(h.name)}</h2><p class="sub small">Couldn't load: ${esc(h.error)}</p></div></div>` : `
+      <a class="event" href="${BASE}${encodeURIComponent(h.slug)}">
+        <div style="display:grid;gap:10px">
+          <span class="pill ${esc(h.status)}">${STATUS[h.status] ?? esc(h.status)}</span>
+          <h2>${esc(h.name)}</h2>
+          <span class="sub small">${date(h.startsAt)} – ${date(h.submissionDeadline)} · ${num(h.tracks)} tracks</span>
+          <div class="nums">
+            <div><span class="eyebrow">Submitted</span><b>${num(h.submitted)}</b></div>
+            <div><span class="eyebrow">Projects</span><b>${num(h.projects)}</b></div>
+            <div><span class="eyebrow">Builders</span><b>${num(h.builders)}</b></div>
+          </div>
+        </div>
+        <span class="go">See city stats →</span>
+      </a>`).join("");
+  } catch (e) {
+    $("events").innerHTML = `<p class="err">Couldn't load the hackathons: ${esc(e.message)}</p>`;
+  }
+}
+load();
+</script>
+</body>
+</html>

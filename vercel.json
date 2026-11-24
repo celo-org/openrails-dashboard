@@ -17,11 +17,53 @@
           "value": "public, max-age=86400"
         }
       ]
+    },
+    {
+      "source": "/og-stats-v1.png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
     }
   ],
   "functions": {
     "api/onchain.js": {
       "maxDuration": 300
+    },
+    "api/event.js": {
+      "maxDuration": 300
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "stats.celobuilders.xyz"
+        }
+      ],
+      "destination": "/stats/index.html"
+    },
+    {
+      "source": "/:slug([a-z0-9-]+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "stats.celobuilders.xyz"
+        }
+      ],
+      "destination": "/stats/event.html"
+    },
+    {
+      "source": "/stats",
+      "destination": "/stats/index.html"
+    },
+    {
+      "source": "/stats/:slug([a-z0-9-]+)",
+      "destination": "/stats/event.html"
+    }
+  ]
 }

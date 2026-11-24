@@ -135,6 +135,7 @@ table.lb td.strong{color:var(--fg);font-weight:500}
 .chart text{font:400 11px var(--f-mono);fill:var(--muted)}
 .row .meta{grid-column:1 / -1;font:400 .76rem var(--f-mono);color:var(--muted);margin-top:-6px}
 .seg{flex-wrap:wrap}
+.final-badge{justify-self:start;font:600 .74rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;background:var(--yellow);color:var(--on-yellow);border-radius:999px;padding:4px 10px}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .skel{display:block;border-radius:6px;background:linear-gradient(90deg,var(--bar-bg) 25%,#2a2925 50%,var(--bar-bg) 75%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite}
 .skel-stack{display:grid;gap:12px}
@@ -170,10 +171,11 @@ table.lb td.strong{color:var(--fg);font-weight:500}
       <img src="/brand/Celo_Symbol_RGB_ProsperityYellow.svg" alt="Celo">
       <span><b>Agents on Open Rails</b><small>Celo hackathon · Celo Devs</small></span>
     </a>
-    <a class="built" href="https://celo.org" rel="noopener">Built on Celo ↗</a>
+    <span style="display:flex;gap:16px;flex-wrap:wrap;justify-content:flex-end"><a class="built" href="https://stats.celobuilders.xyz/" rel="noopener">All hackathon stats ↗</a><a class="built" href="https://celo.org" rel="noopener">Built on Celo ↗</a></span>
   </div>
 
   <header>
+    <span class="final-badge" id="finalBadge" hidden>Final results</span>
     <h1>Which city is building the most?</h1>
     <p class="sub">Live ranking of the hackathon from Loops House and Celo mainnet: who is registering, who is shipping, and how much value their agents are moving. <span id="deadline"></span></p>
     <div id="banner" class="banner" hidden>Example data. The Loops House API key isn't configured yet, so these numbers are placeholders.</div>
@@ -401,8 +403,11 @@ function render(data){
   const t = data.totals;
   $("submitted").textContent = num(t.submitted); $("projects").textContent = num(t.projects);
   $("registrations").textContent = num(t.registrations); $("countries").textContent = num(t.countries);
+  const ended = data.status === "final";
+  $("finalBadge").hidden = !ended;
   if (data.event?.submissionDeadline) {
-    $("deadline").textContent = "Submissions close " + new Date(data.event.submissionDeadline).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZoneName:"short"}) + ".";
+    const when = new Date(data.event.submissionDeadline).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
+    $("deadline").textContent = ended ? `Submissions closed ${when}. These are the final numbers.` : `Submissions close ${when}.`;
   }
   document.querySelectorAll('[data-metric]:not([data-metric="registrations"])').forEach(b => { b.disabled = !data.onchain; });
   if (data.onchain) {
@@ -414,7 +419,9 @@ function render(data){
     st.className = "status " + (data.failedWallets ? "stale" : "done");
     $("onchainStatusText").textContent = data.failedWallets
       ? `${plural(data.failedWallets, "wallet")} couldn't be read this round; totals may be a little low.`
-      : `On-chain data as of ${age <= 1 ? "just now" : `${age} min ago`}${data.refreshing ? " · refreshing in the background" : ""}`;
+      : data.final
+        ? "Final on-chain numbers, counted from the start of the hackathon until the submission deadline."
+        : `On-chain data as of ${age <= 1 ? "just now" : `${age} min ago`}${data.refreshing ? " · refreshing in the background" : ""}`;
     renderProjects(); renderTokens(); renderActivity();
   }
   rankList($("rank-argentina"), "argentina");
@@ -440,7 +447,9 @@ function render(data){
       <b style="height:${(d.submitted/dmax*100).toFixed(1)}%;background:var(--sub);border-radius:3px 3px 0 0"></b>
     </span>`).join("");
   $("d0").textContent = data.byDay[0]?.day ?? ""; $("d1").textContent = data.byDay.at(-1)?.day ?? "";
-  $("updated").textContent = `Updated ${new Date(data.updatedAt).toLocaleString()} · registrations refresh every 5 minutes, on-chain data every 15`;
+  $("updated").textContent = data.status === "final"
+    ? `Final results of the hackathon. On-chain activity counts until the submission deadline.`
+    : `Updated ${new Date(data.updatedAt).toLocaleString()} · registrations refresh every 5 minutes, on-chain data every 15`;
 }
 
 async function get(path){
