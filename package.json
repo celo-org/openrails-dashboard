@@ -13,5 +13,8 @@
   "dependencies": {
     "@vercel/blob": "2.8.2",
     "@vercel/functions": "3.10.1"
+  },
+  "overrides": {
+    "zod": "4.6.6"
   }
 }
